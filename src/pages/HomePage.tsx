@@ -1,31 +1,52 @@
 import { ArrowRight, Sparkles } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
-import { categories, heroSlides, products } from '../data/mock'
 import { triggerToast } from '../components/common/ToastContainer'
 import { useAppStore } from '../store/useAppStore'
+import { useQuery } from '@tanstack/react-query'
+import { api } from '../services/api'
 
 export const HomePage = () => {
   const { addToCart, toggleWishlist, wishlist } = useAppStore()
   const navigate = useNavigate()
+  const productsQuery = useQuery({ queryKey: ['products', 'home'], queryFn: () => api.products(new URLSearchParams({ sort: 'featured', limit: '20' })), retry: false })
+  const categoriesQuery = useQuery({ queryKey: ['categories'], queryFn: api.categories, retry: false })
+  const heroQuery = useQuery({ queryKey: ['heroSlides'], queryFn: api.heroSlides, retry: false })
+  const products = productsQuery.data?.items ?? []
+  const categories = categoriesQuery.data ?? []
+  const heroSlides = (heroQuery.data ?? []).filter((slide) => slide.active !== false)
 
   return (
     <div className="home-page">
       <section className="hero-section container">
         <div className="hero-carousel">
-          {heroSlides.map((slide, index) => (
-            <div key={slide.id} className={`hero-slide ${index === 0 ? 'active' : ''}`}>
-              <img src={slide.image} alt={slide.heading} />
+          {heroSlides.length === 0 ? (
+            <div className="hero-slide active empty-state-hero">
               <div className="hero-copy">
                 <span className="eyebrow">Curated fragrance rituals</span>
-                <h1>{slide.heading}</h1>
-                <p>{slide.subheading}</p>
+                <h1>Slow moments, beautifully lit.</h1>
+                <p>Premium candle collections and home-fragrance essentials, curated for your ritual.</p>
                 <Link to="/shop" className="primary-button">
-                  {slide.cta}
+                  Shop the collection
                   <ArrowRight size={16} />
                 </Link>
               </div>
             </div>
-          ))}
+          ) : (
+            heroSlides.map((slide, index) => (
+              <div key={slide.id ?? slide._id ?? `${slide.heading}-${index}`} className={`hero-slide ${index === 0 ? 'active' : ''}`}>
+                <img src={slide.desktopImage ?? slide.image ?? '/images/musk-rose-collection.png'} alt={slide.heading} />
+                <div className="hero-copy">
+                  <span className="eyebrow">Curated fragrance rituals</span>
+                  <h1>{slide.heading}</h1>
+                  <p>{slide.subheading}</p>
+                  <Link to={slide.ctaUrl ?? '/shop'} className="primary-button">
+                    {slide.ctaText ?? 'Shop now'}
+                    <ArrowRight size={16} />
+                  </Link>
+                </div>
+              </div>
+            ))
+          )}
         </div>
       </section>
 
@@ -35,15 +56,19 @@ export const HomePage = () => {
           <h2>Explore our collections</h2>
         </div>
         <div className="category-grid">
-          {categories.map((category) => (
-            <Link key={category.id} to={`/category/${category.slug}`} className="category-card">
-              <img src={category.image} alt={category.name} />
-              <div>
-                <h3>{category.name}</h3>
-                <p>{category.count} products</p>
-              </div>
-            </Link>
-          ))}
+          {categories.length === 0 ? (
+            <div className="empty-state full-width">No categories have been published yet.</div>
+          ) : (
+            categories.map((category) => (
+              <Link key={category.id} to={`/category/${category.slug}`} className="category-card">
+                <img src={category.image} alt={category.name} />
+                <div>
+                  <h3>{category.name}</h3>
+                  <p>{category.count} products</p>
+                </div>
+              </Link>
+            ))
+          )}
         </div>
       </section>
 
@@ -53,7 +78,9 @@ export const HomePage = () => {
           <h2>Made to be gifted and kept</h2>
         </div>
         <div className="product-grid">
-          {products.map((product) => {
+          {products.length === 0 ? (
+            <div className="empty-state full-width">No products are available yet. The catalog will appear here once the admin publishes inventory.</div>
+          ) : products.map((product) => {
             const isLiked = wishlist.includes(product.id)
             return (
               <article

@@ -1,8 +1,9 @@
 import { useMemo } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
-import { products } from '../data/mock'
 import { useAppStore } from '../store/useAppStore'
 import { triggerToast } from '../components/common/ToastContainer'
+import { useQuery } from '@tanstack/react-query'
+import { api } from '../services/api'
 
 export const ShopPage = () => {
   const { slug } = useParams()
@@ -13,58 +14,22 @@ export const ShopPage = () => {
   const query = (searchParams.get('q') ?? '').trim().toLowerCase()
   const maxPrice = Number(searchParams.get('maxPrice') ?? '2500')
   const sort = searchParams.get('sort') ?? 'featured'
+  const productQuery = useQuery({
+    queryKey: ['products', query, slug, maxPrice, sort],
+    queryFn: () => api.products(new URLSearchParams({
+      ...(query ? { q: query } : {}),
+      ...(slug ? { category: slug } : {}),
+      maxPrice: String(maxPrice),
+      sort: sort === 'price_low_high' ? 'price_low_high' : sort === 'price_high_low' ? 'price_high_low' : sort === 'rating' ? 'rating' : 'featured',
+      limit: '100',
+    })),
+    retry: false,
+  })
 
   const visibleProducts = useMemo(() => {
-    const normalizedSlug = slug ?? searchParams.get('category') ?? 'shop'
-    const filtered = products.filter((product) => {
-      const matchesCategory =
-        !normalizedSlug ||
-        normalizedSlug === 'shop' ||
-        normalizedSlug === 'candles' ||
-        normalizedSlug === 'diffusers' ||
-        normalizedSlug === 'room-sprays' ||
-        normalizedSlug === 'gift-sets'
-          ? true
-          : product.category.toLowerCase().includes(normalizedSlug.replace(/-/g, ' ')) ||
-            product.collection.toLowerCase().includes(normalizedSlug.replace(/-/g, ' ')) ||
-            product.slug.includes(normalizedSlug)
-
-      const matchesSearch =
-        !query ||
-        [
-          product.name,
-          product.category,
-          product.collection,
-          product.fragrance,
-          product.description,
-          product.tags.join(' '),
-        ]
-          .join(' ')
-          .toLowerCase()
-          .includes(query)
-
-      const matchesPrice = product.price <= maxPrice
-
-      return matchesCategory && matchesSearch && matchesPrice
-    })
-
-    const sorted = [...filtered]
-    switch (sort) {
-      case 'price_low_high':
-        sorted.sort((a, b) => a.price - b.price)
-        break
-      case 'price_high_low':
-        sorted.sort((a, b) => b.price - a.price)
-        break
-      case 'rating':
-        sorted.sort((a, b) => b.rating - a.rating)
-        break
-      default:
-        sorted.sort((a, b) => b.rating * b.reviews - a.rating * a.reviews)
-    }
-
-    return sorted
-  }, [maxPrice, query, searchParams, slug, sort])
+    if (productQuery.data) return productQuery.data.items
+    return []
+  }, [maxPrice, productQuery.data, query, searchParams, slug, sort])
 
   const pageTitle = slug ? slug.replace(/-/g, ' ') : query ? `Search: ${query}` : 'Shop all'
 

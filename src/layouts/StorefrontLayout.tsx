@@ -1,11 +1,12 @@
 import { Link, Outlet, useNavigate } from 'react-router-dom'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
+import { useQuery } from '@tanstack/react-query'
 import { ShoppingBag, Search, UserRound, Heart, Minus, Plus, Trash2 } from 'lucide-react'
 import { useAppStore } from '../store/useAppStore'
 import { getCartCount } from '../store/useAppStore'
-import { categories, products } from '../data/mock'
 import { navLinks } from '../constants/site'
+import { api } from '../services/api'
 
 export const StorefrontLayout = () => {
   const navigate = useNavigate()
@@ -22,7 +23,25 @@ export const StorefrontLayout = () => {
     removeFromCart,
     updateQuantity,
   } = useAppStore()
+  const { replaceCart, replaceWishlist, setUser } = useAppStore()
+  const productsQuery = useQuery({ queryKey: ['products', 'header'], queryFn: () => api.products(new URLSearchParams({ limit: '100' })), retry: false })
+  const categoriesQuery = useQuery({ queryKey: ['categories'], queryFn: api.categories, retry: false })
+  const announcementQuery = useQuery({ queryKey: ['announcement'], queryFn: api.announcement, retry: false })
+  const products = productsQuery.data?.items ?? []
+  const categories = categoriesQuery.data ?? []
   const cartCount = getCartCount(cartItems)
+  const announcement = announcementQuery.data
+
+  useEffect(() => {
+    if (!window.localStorage.getItem('candley-aroma-access-token')) {
+      setUser(null)
+      return
+    }
+
+    void api.me().then((user) => setUser(user)).catch(() => setUser(null))
+    void api.cart().then((cart) => replaceCart(cart.items.map((item) => ({ productId: item.productId.id, variantId: item.variantId, quantity: item.quantity })))).catch(() => undefined)
+    void api.wishlist().then((wishlistData) => replaceWishlist(wishlistData.productIds.map((product) => product.id))).catch(() => undefined)
+  }, [replaceCart, replaceWishlist, setUser])
 
   const cartProducts = cartItems.map((item) => {
     const product = products.find((entry) => entry.id === item.productId) ?? products[0]
@@ -45,9 +64,14 @@ export const StorefrontLayout = () => {
   return (
     <div className="app-shell">
       <header className="topbar">
-        <div className="announcement-bar">
-          <span>Free shipping above ₹999</span>
-        </div>
+        {announcement?.enabled && (
+          <div className="announcement-bar">
+            <span>{announcement.freeShippingEnabled && announcement.freeShippingThreshold
+              ? `Free shipping on orders above ₹${announcement.freeShippingThreshold}`
+              : announcement.message}
+            </span>
+          </div>
+        )}
         <nav className="primary-header container">
           <button className="icon-button mobile-only" onClick={toggleMenu} aria-label="Toggle menu">
             ☰

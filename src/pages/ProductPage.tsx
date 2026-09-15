@@ -1,13 +1,28 @@
 import { useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { products } from '../data/mock'
 import { triggerToast } from '../components/common/ToastContainer'
 import { useAppStore } from '../store/useAppStore'
+import { useQuery } from '@tanstack/react-query'
+import { api } from '../services/api'
 
 export const ProductPage = () => {
   const { slug } = useParams()
-  const product = products.find((item) => item.slug === slug) ?? products[0]
+  const productQuery = useQuery({ queryKey: ['product', slug], queryFn: () => api.product(slug ?? ''), enabled: Boolean(slug), retry: false })
+  const product = productQuery.data
   const { addToCart, toggleWishlist, wishlist } = useAppStore()
+
+  if (!product) {
+    return (
+      <div className="container section-spacing">
+        <div className="empty-state">
+          <h2>Product not found</h2>
+          <p>The requested candle is not available in the catalog yet.</p>
+          <Link to="/shop" className="primary-button">Browse the collection</Link>
+        </div>
+      </div>
+    )
+  }
+
   const variants = useMemo(
     () =>
       product.variants ?? [
@@ -23,7 +38,7 @@ export const ProductPage = () => {
   return (
     <div className="container section-spacing product-page">
       <div className="product-gallery">
-        {product.images.map((image, index) => (
+        {(product.images ?? []).map((image, index) => (
           <img key={image} src={image} alt={`${product.name}-${index}`} />
         ))}
       </div>

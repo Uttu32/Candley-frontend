@@ -1,9 +1,13 @@
 import { Link } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
 import { useAppStore } from '../store/useAppStore'
-import { products } from '../data/mock'
+import { products as fallbackProducts } from '../data/mock'
+import { api } from '../services/api'
 
 export const CartPage = () => {
   const { cartItems, removeFromCart, updateQuantity } = useAppStore()
+  const productsQuery = useQuery({ queryKey: ['products', 'cart'], queryFn: () => api.products(new URLSearchParams({ limit: '100' })), retry: false })
+  const products = productsQuery.data?.items ?? fallbackProducts
 
   const cartProducts = cartItems.map((item) => {
     const product = products.find((entry) => entry.id === item.productId) ?? products[0]
