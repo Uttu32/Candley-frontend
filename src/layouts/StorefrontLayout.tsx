@@ -6,7 +6,7 @@ import { ShoppingBag, Search, UserRound, Heart, Minus, Plus, Trash2 } from 'luci
 import { useAppStore } from '../store/useAppStore'
 import { getCartCount } from '../store/useAppStore'
 import { navLinks } from '../constants/site'
-import { api } from '../services/api'
+import { api, getAccessToken } from '../services/api'
 
 export const StorefrontLayout = () => {
   const navigate = useNavigate()
@@ -33,7 +33,7 @@ export const StorefrontLayout = () => {
   const announcement = announcementQuery.data
 
   useEffect(() => {
-    if (!window.localStorage.getItem('candley-aroma-access-token')) {
+    if (!getAccessToken()) {
       setUser(null)
       return
     }

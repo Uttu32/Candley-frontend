@@ -1,9 +1,10 @@
 import { Outlet, NavLink } from 'react-router-dom'
-import { Package, ShoppingCart, Users, TicketPercent, Settings, LayoutDashboard } from 'lucide-react'
+import { Package, ShoppingCart, Users, TicketPercent, Settings, LayoutDashboard, Image } from 'lucide-react'
 
 const adminLinks = [
   { to: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/admin/products', label: 'Products', icon: Package },
+  { to: '/admin/cms/hero', label: 'Hero media', icon: Image },
   { to: '/admin/orders', label: 'Orders', icon: ShoppingCart },
   { to: '/admin/customers', label: 'Customers', icon: Users },
   { to: '/admin/coupons', label: 'Coupons', icon: TicketPercent },

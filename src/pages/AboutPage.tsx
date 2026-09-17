@@ -3,9 +3,10 @@ import { motion } from 'framer-motion'
 import type { Variants } from 'framer-motion'
 import { ArrowRight, Check, Flame, Heart, Sparkles } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
-import { products } from '../data/mock'
+import { useQuery } from '@tanstack/react-query'
 import { aboutPhilosophy, aboutValues, fragranceFamilies, makingProcess, moods, rituals } from '../data/aboutContent'
 import { triggerToast } from '../components/common/ToastContainer'
+import { api } from '../services/api'
 import { useAppStore } from '../store/useAppStore'
 
 const reveal: Variants = {
@@ -17,6 +18,8 @@ const AboutPage = () => {
   const navigate = useNavigate()
   const { addToCart, toggleWishlist, wishlist } = useAppStore()
   const [selectedMood, setSelectedMood] = useState(0)
+  const productsQuery = useQuery({ queryKey: ['products', 'about'], queryFn: () => api.products(new URLSearchParams({ limit: '100' })), retry: false })
+  const products = productsQuery.data?.items ?? []
 
   return (
     <main className="about-page">
@@ -78,7 +81,7 @@ const AboutPage = () => {
 
       <section className="promise-section container section-spacing"><span className="eyebrow">Our promise</span><h2>Beautiful Scents. Meaningful Moments.</h2><p>We create candles for more than beautiful rooms. We create them for the quiet moments, the celebrations, the conversations, the pauses and the memories that make a house feel like home.</p><Link to="/shop" className="primary-button">Explore the collection <ArrowRight size={16} /></Link></section>
 
-      <section className="related-section container section-spacing"><div className="about-section-heading"><span className="eyebrow">You may also love</span><h2>Bring the feeling home</h2></div><div className="related-grid">{products.slice(0, 4).map((product) => { const isLiked = wishlist.includes(product.id); return <article key={product.id} className="related-card"><button type="button" className={`wishlist-button ${isLiked ? 'active' : ''}`} aria-label={isLiked ? `Remove ${product.name} from wishlist` : `Add ${product.name} to wishlist`} onClick={() => { toggleWishlist(product.id); triggerToast(isLiked ? 'Removed from wishlist' : 'Added to wishlist') }}><Heart size={16} fill={isLiked ? 'currentColor' : 'none'} /></button><button type="button" className="related-card-image" onClick={() => navigate(`/product/${product.slug}`)}><img src={product.images[0]} alt={product.name} /></button><div><h3>{product.name}</h3><div className="related-card-price"><span>★ {product.rating}</span><strong>₹{product.price}</strong></div><button type="button" className="primary-button small" onClick={() => { addToCart(product.id, 1, product.variants?.[0]?.id); triggerToast('Added to cart') }}>Add to cart</button></div></article> })}</div></section>
+      {products.length > 0 && <section className="related-section container section-spacing"><div className="about-section-heading"><span className="eyebrow">You may also love</span><h2>Bring the feeling home</h2></div><div className="related-grid">{products.slice(0, 4).map((product) => { const isLiked = wishlist.includes(product.id); return <article key={product.id} className="related-card"><button type="button" className={`wishlist-button ${isLiked ? 'active' : ''}`} aria-label={isLiked ? `Remove ${product.name} from wishlist` : `Add ${product.name} to wishlist`} onClick={() => { toggleWishlist(product.id); triggerToast(isLiked ? 'Removed from wishlist' : 'Added to wishlist') }}><Heart size={16} fill={isLiked ? 'currentColor' : 'none'} /></button><button type="button" className="related-card-image" onClick={() => navigate(`/product/${product.slug}`)}><img src={product.images[0]} alt={product.name} /></button><div><h3>{product.name}</h3><div className="related-card-price"><span>★ {product.rating}</span><strong>₹{product.price}</strong></div><button type="button" className="primary-button small" onClick={() => { addToCart(product.id, 1, product.variants?.[0]?.id); triggerToast('Added to cart') }}>Add to cart</button></div></article> })}</div></section>}
     </main>
   )
 }

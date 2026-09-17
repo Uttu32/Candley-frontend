@@ -26,20 +26,49 @@ export type HeroSlide = {
   overlayPosition?: string
   textAlignment?: string
 }
+export type AdminProductInput = {
+  name: string
+  slug: string
+  sku: string
+  category: string
+  collection: string
+  fragrance: string
+  description: string
+  shortDescription: string
+  price: number
+  mrp: number
+  stock: number
+  tags: string[]
+  status: 'DRAFT' | 'ACTIVE' | 'OUT_OF_STOCK' | 'ARCHIVED'
+  featured: boolean
+  variants: Array<{ label: string; sku: string; price: number; stock: number }>
+}
 export type ApiCart = { userId: string; items: Array<{ productId: Product; variantId?: string; quantity: number }> }
 export type Address = { name: string; phone: string; addressLine1: string; city: string; state: string; postalCode: string; country: string }
 export type Order = { _id: string; orderNumber: string; items: Array<{ productName: string; quantity: number; unitPrice: number; lineTotal: number; image?: string }>; subtotal: number; shipping: number; tax: number; total: number; paymentMethod: 'RAZORPAY' | 'COD'; paymentStatus: string; status: string; shippingAddress: Address; createdAt: string }
+export type AdminDashboard = {
+  totalSales: number
+  totalOrders: number
+  totalCustomers: number
+  conversionRate?: number
+  pendingOrders: number
+  totalProducts: number
+  outOfStockProducts: number
+  averageOrderValue: number
+  revenueSeries?: Array<{ label: string; value: number }>
+}
 
-const accessTokenKey = 'candley-aroma-access-token'
 const baseUrl = () => ((import.meta.env.VITE_API_BASE_URL as string | undefined) ?? '').replace(/\/$/, '')
 
-export const getAccessToken = () => window.localStorage.getItem(accessTokenKey)
-export const setAccessToken = (token: string) => window.localStorage.setItem(accessTokenKey, token)
-export const clearAccessToken = () => window.localStorage.removeItem(accessTokenKey)
+let accessToken: string | null = null
+
+export const getAccessToken = () => accessToken
+export const setAccessToken = (token: string) => { accessToken = token }
+export const clearAccessToken = () => { accessToken = null }
 
 const request = async <T>(path: string, init: RequestInit = {}, canRefresh = true): Promise<T> => {
   const headers = new Headers(init.headers)
-  if (init.body && !headers.has('Content-Type')) headers.set('Content-Type', 'application/json')
+  if (init.body && !(init.body instanceof FormData) && !headers.has('Content-Type')) headers.set('Content-Type', 'application/json')
   const token = getAccessToken()
   if (token) headers.set('Authorization', `Bearer ${token}`)
   const response = await fetch(`${baseUrl()}${path}`, { ...init, headers, credentials: 'include' })
@@ -64,6 +93,34 @@ export const api = {
     const session = await request<AuthSession>('/api/v1/admin/login', { method: 'POST', body: JSON.stringify(input) })
     setAccessToken(session.accessToken)
     return session
+  },
+  adminDashboard: (params?: { from?: string; to?: string }) => {
+    const query = new URLSearchParams()
+    if (params?.from) query.set('from', params.from)
+    if (params?.to) query.set('to', params.to)
+    const suffix = query.toString() ? `?${query.toString()}` : ''
+    return request<AdminDashboard>(`/api/v1/admin/dashboard${suffix}`)
+  },
+  adminProducts: (params?: { page?: number; limit?: number; search?: string }) => {
+    const query = new URLSearchParams()
+    if (params?.page) query.set('page', String(params.page))
+    if (params?.limit) query.set('limit', String(params.limit))
+    if (params?.search) query.set('search', params.search)
+    return request<ProductList>(`/api/v1/admin/products?${query.toString()}`)
+  },
+  createAdminProduct: async (input: AdminProductInput, images: File[], thumbnailIndex: number) => {
+    const body = new FormData()
+    body.set('product', JSON.stringify(input))
+    body.set('thumbnailIndex', String(thumbnailIndex))
+    images.forEach((image) => body.append('images', image))
+    return request<Product>('/api/v1/admin/products', { method: 'POST', body })
+  },
+  adminHeroSlides: () => request<HeroSlide[]>('/api/v1/admin/cms/hero'),
+  updateHeroImage: async (slideId: string, image: File, target: 'desktopImage' | 'mobileImage') => {
+    const body = new FormData()
+    body.set('image', image)
+    body.set('target', target)
+    return request<HeroSlide>(`/api/v1/admin/cms/hero/${encodeURIComponent(slideId)}/image`, { method: 'POST', body })
   },
   logout: async () => { await request<null>('/api/v1/auth/logout', { method: 'POST' }, false); clearAccessToken() },
   me: () => request<AuthUser>('/api/v1/auth/me'),

@@ -16,6 +16,7 @@ import { AdminOrdersPage } from '../pages/admin/AdminOrdersPage'
 import { AdminCustomersPage } from '../pages/admin/AdminCustomersPage'
 import { AdminCouponsPage } from '../pages/admin/AdminCouponsPage'
 import { AdminSettingsPage } from '../pages/admin/AdminSettingsPage'
+import { AdminHeroPage } from '../pages/admin/AdminHeroPage'
 import { AdminLoginPage } from '../pages/admin/AdminLoginPage'
 import { CandleLoader } from '../components/common/CandleLoader'
 import { ProtectedRoute } from '../components/common/ProtectedRoute'
@@ -69,6 +70,8 @@ export const router = createBrowserRouter([
               { index: true, element: <Navigate to="/admin/dashboard" replace /> },
               { path: 'dashboard', element: <AdminDashboardPage /> },
               { path: 'products', element: <AdminProductsPage /> },
+              { path: 'products/new', element: <AdminProductsPage /> },
+              { path: 'cms/hero', element: <AdminHeroPage /> },
               { path: 'orders', element: <AdminOrdersPage /> },
               { path: 'customers', element: <AdminCustomersPage /> },
               { path: 'coupons', element: <AdminCouponsPage /> },

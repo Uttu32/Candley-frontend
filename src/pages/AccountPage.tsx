@@ -14,7 +14,7 @@ import {
   fetchRemoteProfile,
 } from '../services/account'
 import type { AccountPreferences, AccountProfile } from '../services/account'
-import { api, clearAccessToken } from '../services/api'
+import { api, clearAccessToken, getAccessToken } from '../services/api'
 
 const accountNav = [
   { path: '/account', label: 'Profile' },
@@ -27,8 +27,8 @@ export const AccountPage = () => {
   const location = useLocation()
   const navigate = useNavigate()
   const { addToCart, toggleWishlist, wishlist } = useAppStore()
-  const wishlistQuery = useQuery({ queryKey: ['wishlist'], queryFn: api.wishlist, enabled: Boolean(window.localStorage.getItem('candley-aroma-access-token')), retry: false })
-  const ordersQuery = useQuery({ queryKey: ['orders'], queryFn: api.orders, enabled: Boolean(window.localStorage.getItem('candley-aroma-access-token')), retry: false })
+  const wishlistQuery = useQuery({ queryKey: ['wishlist'], queryFn: api.wishlist, enabled: Boolean(getAccessToken()), retry: false })
+  const ordersQuery = useQuery({ queryKey: ['orders'], queryFn: api.orders, enabled: Boolean(getAccessToken()), retry: false })
   const savedProducts = wishlistQuery.data?.productIds ?? fallbackProducts.filter((product) => wishlist.includes(product.id))
   const isWishlistPage = location.pathname === '/account/wishlist'
   const isOrdersPage = location.pathname === '/account/orders'
@@ -38,7 +38,7 @@ export const AccountPage = () => {
   const [isEditing, setIsEditing] = useState(false)
 
   useEffect(() => {
-    const accessToken = window.localStorage.getItem('candley-aroma-access-token')
+    const accessToken = getAccessToken()
     if (!accessToken) return
     fetchRemoteProfile(accessToken).then((remoteProfile) => {
       if (remoteProfile) {
@@ -51,7 +51,7 @@ export const AccountPage = () => {
   const saveProfileChanges = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     try {
-      const updatedProfile = window.localStorage.getItem('candley-aroma-access-token') ? await api.updateProfile(profile) : profile
+      const updatedProfile = getAccessToken() ? await api.updateProfile(profile) : profile
       const localProfile = { ...profile, ...updatedProfile }
       setProfile(localProfile)
       saveProfile(localProfile)

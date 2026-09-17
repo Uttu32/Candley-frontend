@@ -20,29 +20,15 @@ export const HomePage = () => {
       <section className="hero-section container">
         <div className="hero-carousel">
           {heroSlides.length === 0 ? (
-            <div className="hero-slide active empty-state-hero">
-              <div className="hero-copy">
-                <span className="eyebrow">Curated fragrance rituals</span>
-                <h1>Slow moments, beautifully lit.</h1>
-                <p>Premium candle collections and home-fragrance essentials, curated for your ritual.</p>
-                <Link to="/shop" className="primary-button">
-                  Shop the collection
-                  <ArrowRight size={16} />
-                </Link>
-              </div>
-            </div>
+            <div className="hero-slide active empty-state-hero"><div className="empty-state">No hero media has been published yet.</div></div>
           ) : (
             heroSlides.map((slide, index) => (
               <div key={slide.id ?? slide._id ?? `${slide.heading}-${index}`} className={`hero-slide ${index === 0 ? 'active' : ''}`}>
-                <img src={slide.desktopImage ?? slide.image ?? '/images/musk-rose-collection.png'} alt={slide.heading} />
+                {slide.desktopImage && <img src={slide.desktopImage} alt={slide.heading} />}
                 <div className="hero-copy">
-                  <span className="eyebrow">Curated fragrance rituals</span>
                   <h1>{slide.heading}</h1>
                   <p>{slide.subheading}</p>
-                  <Link to={slide.ctaUrl ?? '/shop'} className="primary-button">
-                    {slide.ctaText ?? 'Shop now'}
-                    <ArrowRight size={16} />
-                  </Link>
+                  {slide.ctaUrl && slide.ctaText && <Link to={slide.ctaUrl} className="primary-button">{slide.ctaText}<ArrowRight size={16} /></Link>}
                 </div>
               </div>
             ))
@@ -141,16 +127,6 @@ export const HomePage = () => {
               </article>
             )
           })}
-        </div>
-      </section>
-
-      <section className="container section-spacing editorial-block">
-        <div className="editorial-video-card">
-          <div className="video-overlay">
-            <Sparkles size={22} />
-            <span>Light up your moments.</span>
-          </div>
-          <img src="/images/musk-rose-collection.png" alt="Candley Aroma rose candle collection" />
         </div>
       </section>
 

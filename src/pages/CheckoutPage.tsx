@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { api, type Address } from '../services/api'
+import { api, getAccessToken, type Address } from '../services/api'
 import { triggerToast } from '../components/common/ToastContainer'
 
 const initialAddress: Address = { name: '', phone: '', addressLine1: '', city: '', state: '', postalCode: '', country: 'India' }
@@ -13,7 +13,7 @@ export const CheckoutPage = () => {
 
   const updateAddress = (key: keyof Address, value: string) => setAddress((current) => ({ ...current, [key]: value }))
   const submit = async (paymentMethod: 'COD' | 'RAZORPAY') => {
-    if (!window.localStorage.getItem('candley-aroma-access-token')) {
+    if (!getAccessToken()) {
       navigate('/login')
       return
     }
