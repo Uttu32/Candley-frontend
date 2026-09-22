@@ -39,12 +39,16 @@ export const StorefrontLayout = () => {
     }
 
     void api.me().then((user) => setUser(user)).catch(() => setUser(null))
-    void api.cart().then((cart) => replaceCart(cart.items.map((item) => ({ productId: item.productId.id, variantId: item.variantId, quantity: item.quantity })))).catch(() => undefined)
-    void api.wishlist().then((wishlistData) => replaceWishlist(wishlistData.productIds.map((product) => product.id))).catch(() => undefined)
+    void api.cart().then((cart) => replaceCart(cart.items.map((item) => ({ productId: item.productId._id, variantId: item.variantId, quantity: item.quantity })))).catch(() => undefined)
+    void api.wishlist().then((wishlistData) => replaceWishlist(
+      wishlistData.productIds
+        .map((product) => (typeof product === 'string' ? product : product?._id))
+        .filter((id): id is string => Boolean(id)),
+    )).catch(() => undefined)
   }, [replaceCart, replaceWishlist, setUser])
 
   const cartProducts = cartItems.map((item) => {
-    const product = products.find((entry) => entry.id === item.productId) ?? products[0]
+    const product = products.find((entry) => entry._id === item.productId) ?? products[0]
     return { ...item, product }
   })
 
@@ -121,7 +125,7 @@ export const StorefrontLayout = () => {
               ))}
               <div className="menu-groups">
                 {categories.slice(0, 4).map((category) => (
-                  <a key={category.id} href={`/category/${category.slug}`}>{category.name}</a>
+                  <a key={category._id} href={`/category/${category.slug}`}>{category.name}</a>
                 ))}
               </div>
             </div>
@@ -162,7 +166,7 @@ export const StorefrontLayout = () => {
                 ) : (
                   searchResults.slice(0, 6).map((product) => (
                     <button
-                      key={product.id}
+                      key={product._id}
                       type="button"
                       className="search-result-item"
                       onClick={() => {
@@ -204,7 +208,7 @@ export const StorefrontLayout = () => {
                 </div>
               ) : (
                 cartProducts.map(({ product, quantity, variantId }) => (
-                  <div key={`${product.id}-${variantId ?? 'default'}`} className="cart-item-row cart-drawer-item">
+                  <div key={`${product._id}-${variantId ?? 'default'}`} className="cart-item-row cart-drawer-item">
                     <div className="mini-thumb" style={{ backgroundImage: `url(${product.images[0]})` }} />
                     <div className="drawer-item-copy">
                       <strong>{product.name}</strong>
@@ -213,7 +217,7 @@ export const StorefrontLayout = () => {
                         <button
                           type="button"
                           aria-label={`Decrease quantity of ${product.name}`}
-                          onClick={() => updateQuantity(product.id, variantId, quantity - 1)}
+                          onClick={() => updateQuantity(product._id, variantId, quantity - 1)}
                         >
                           <Minus size={14} />
                         </button>
@@ -221,7 +225,7 @@ export const StorefrontLayout = () => {
                         <button
                           type="button"
                           aria-label={`Increase quantity of ${product.name}`}
-                          onClick={() => updateQuantity(product.id, variantId, quantity + 1)}
+                          onClick={() => updateQuantity(product._id, variantId, quantity + 1)}
                         >
                           <Plus size={14} />
                         </button>
@@ -232,7 +236,7 @@ export const StorefrontLayout = () => {
                       <button
                         type="button"
                         aria-label={`Remove ${product.name} from cart`}
-                        onClick={() => removeFromCart(product.id, variantId)}
+                        onClick={() => removeFromCart(product._id, variantId)}
                       >
                         <Trash2 size={14} />
                       </button>

@@ -8,9 +8,9 @@ export const CartPage = () => {
   const { cartItems, removeFromCart, updateQuantity } = useAppStore()
   const productsQuery = useQuery({ queryKey: ['products', 'cart'], queryFn: () => api.products(new URLSearchParams({ limit: '100' })), retry: false })
   const products = productsQuery.data?.items ?? fallbackProducts
-
+console.log(cartItems, 'this is cartItems', products)
   const cartProducts = cartItems.map((item) => {
-    const product = products.find((entry) => entry.id === item.productId) ?? products[0]
+    const product = products.find((entry) => entry._id === item.productId) ?? products[0]
     return { ...item, product }
   })
 
@@ -26,19 +26,19 @@ export const CartPage = () => {
             </div>
           ) : (
             cartProducts.map(({ product, quantity, variantId }) => (
-              <div key={`${product.id}-${variantId ?? 'default'}`} className="cart-row">
+              <div key={`${product._id}-${variantId ?? 'default'}`} className="cart-row">
                 <img src={product.images[0]} alt={product.name} />
                 <div>
                   <h3>{product.name}</h3>
                   <p>{product.fragrance}</p>
                 </div>
                 <div className="quantity-control">
-                  <button type="button" onClick={() => updateQuantity(product.id, variantId, quantity - 1)}>−</button>
+                  <button type="button" onClick={() => updateQuantity(product._id, variantId, quantity - 1)}>−</button>
                   <span>{quantity}</span>
-                  <button type="button" onClick={() => updateQuantity(product.id, variantId, quantity + 1)}>+</button>
+                  <button type="button" onClick={() => updateQuantity(product._id, variantId, quantity + 1)}>+</button>
                 </div>
                 <strong>₹{product.price * quantity}</strong>
-                <button type="button" className="text-button" onClick={() => removeFromCart(product.id, variantId)}>
+                <button type="button" className="text-button" onClick={() => removeFromCart(product._id, variantId)}>
                   Remove
                 </button>
               </div>

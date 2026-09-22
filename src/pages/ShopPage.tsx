@@ -105,10 +105,10 @@ export const ShopPage = () => {
           ) : (
             <div className="product-grid wide">
               {visibleProducts.map((product) => {
-                const isLiked = wishlist.includes(product.id)
+                const isLiked = wishlist.includes(product._id)
                 return (
                   <article
-                    key={product.id}
+                    key={product._id}
                     className="product-card"
                     role="link"
                     tabIndex={0}
@@ -130,7 +130,7 @@ export const ShopPage = () => {
                         aria-pressed={isLiked}
                         onClick={(event) => {
                           event.stopPropagation()
-                          toggleWishlist(product.id)
+                          toggleWishlist(product._id)
                           triggerToast(isLiked ? 'Removed from wishlist' : 'Added to wishlist')
                         }}
                       >
@@ -154,7 +154,7 @@ export const ShopPage = () => {
                           className="primary-button small"
                           onClick={(event) => {
                             event.stopPropagation()
-                            addToCart(product.id, 1, product.variants?.[0]?.id)
+                            addToCart(product._id, 1, product.variants?.[0]?._id)
                             triggerToast('Added to cart')
                           }}
                         >

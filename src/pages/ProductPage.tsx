@@ -23,7 +23,7 @@ export const ProductPage = () => {
     () =>
       product?.variants ?? [
         {
-          id: 'default',
+          _id: 'default',
           label: 'Default',
           price: product?.price ?? 0,
           stock: product?.stock ?? 0,
@@ -33,20 +33,20 @@ export const ProductPage = () => {
   )
 
   const [selectedVariantId, setSelectedVariantId] = useState(
-    variants[0]?.id ?? 'default',
+    variants[0]?._id ?? 'default',
   )
 
   const [quantity, setQuantity] = useState(1)
 
   useEffect(() => {
-    setSelectedVariantId(variants[0]?.id ?? 'default')
+    setSelectedVariantId(variants[0]?._id ?? 'default')
     setQuantity(1)
-  }, [product?.id, variants])
+  }, [product?._id, variants])
 
   const selectedVariant =
-    variants.find((variant) => variant.id === selectedVariantId) ?? variants[0]
+    variants.find((variant) => variant._id === selectedVariantId) ?? variants[0]
 
-  const isLiked = product ? wishlist.includes(product.id) : false
+  const isLiked = product ? wishlist.includes(product._id) : false
 
   if (!product) {
     return (
@@ -64,9 +64,9 @@ export const ProductPage = () => {
 
   return (
     <div className="container section-spacing product-page">
-      <div className="product-gallery border-2 border-red-600">
+      <div className="product-gallery">
         {(product.images ?? []).map((image, index) => (
-          <img key={image} src={image} alt={`${ product.name } -${ index } `} />
+          <img key={image} src={image} alt={`${product.name} -${index} `} />
         ))}
       </div>
 
@@ -85,12 +85,11 @@ export const ProductPage = () => {
         <div className="variant-list">
           {variants.map((variant) => (
             <button
-              key={variant.id}
-              className={`secondary - button small ${
-  selectedVariantId === variant.id ? 'active' : ''
-} `}
+              key={variant._id}
+              className={`secondary - button small ${selectedVariantId === variant._id ? 'active' : ''
+                } `}
               type="button"
-              onClick={() => setSelectedVariantId(variant.id)}
+              onClick={() => setSelectedVariantId(variant._id)}
             >
               {variant.label}
             </button>
@@ -122,7 +121,7 @@ export const ProductPage = () => {
             type="button"
             className="primary-button"
             onClick={() => {
-              addToCart(product.id, quantity, selectedVariantId)
+              addToCart(product._id, quantity, selectedVariantId)
               triggerToast('Added to cart')
             }}
           >
@@ -133,7 +132,7 @@ export const ProductPage = () => {
             type="button"
             className="secondary-button"
             onClick={() => {
-              toggleWishlist(product.id)
+              toggleWishlist(product._id)
               triggerToast(
                 isLiked
                   ? 'Removed from wishlist'
@@ -145,8 +144,15 @@ export const ProductPage = () => {
           </button>
         </div>
 
-        <div className="detail-links">
-          <Link to="/shop">Continue shopping</Link>
+        <div className="detail-links flex justify-center mt-8">
+          <Link to="/shop" className="group inline-flex items-center gap-1 text-sm font-medium text-blue-600 transition-colors hover:text-blue-800"          >
+            <span className="border-b text-blue-600 border-blue-600 pb-0.5 transition-all group-hover:border-blue-800">
+              Continue shopping
+            </span>
+            <span className="transition-transform group-hover:translate-x-1">
+              →
+            </span>
+          </Link>
         </div>
       </div>
     </div>

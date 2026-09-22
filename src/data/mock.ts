@@ -1,19 +1,19 @@
 import type { Category, Product } from '../types'
 
 export const categories: Category[] = [
-    { id: 'soy', name: 'Soy Candles', slug: 'soy-candles', count: 24, image: '/images/musk-rose-collection.png' },
-    { id: 'luxury', name: 'Luxury Candles', slug: 'luxury-candles', count: 16, image: '/images/lotus-urli-candle.png' },
-    { id: 'floral', name: 'Floral', slug: 'floral', count: 14, image: '/images/musk-rose-candle.png' },
-    { id: 'woody', name: 'Woody', slug: 'woody', count: 12, image: '/images/lotus-urli-candle.png' },
-    { id: 'fresh', name: 'Fresh', slug: 'fresh', count: 18, image: '/images/musk-rose-collection.png' },
-    { id: 'vanilla', name: 'Vanilla', slug: 'vanilla', count: 9, image: '/images/musk-rose-candle.png' },
-    { id: 'aromatherapy', name: 'Aromatherapy', slug: 'aromatherapy', count: 22, image: '/images/lotus-urli-candle.png' },
-    { id: 'gift-sets', name: 'Gift Sets', slug: 'gift-sets', count: 11, image: '/images/musk-rose-collection.png' },
+    { _id: 'soy', name: 'Soy Candles', slug: 'soy-candles', count: 24, image: '/images/musk-rose-collection.png' },
+    { _id: 'luxury', name: 'Luxury Candles', slug: 'luxury-candles', count: 16, image: '/images/lotus-urli-candle.png' },
+    { _id: 'floral', name: 'Floral', slug: 'floral', count: 14, image: '/images/musk-rose-candle.png' },
+    { _id: 'woody', name: 'Woody', slug: 'woody', count: 12, image: '/images/lotus-urli-candle.png' },
+    { _id: 'fresh', name: 'Fresh', slug: 'fresh', count: 18, image: '/images/musk-rose-collection.png' },
+    { _id: 'vanilla', name: 'Vanilla', slug: 'vanilla', count: 9, image: '/images/musk-rose-candle.png' },
+    { _id: 'aromatherapy', name: 'Aromatherapy', slug: 'aromatherapy', count: 22, image: '/images/lotus-urli-candle.png' },
+    { _id: 'gift-sets', name: 'Gift Sets', slug: 'gift-sets', count: 11, image: '/images/musk-rose-collection.png' },
 ]
 
 export const products: Product[] = [
     {
-        id: 'p1',
+        _id: 'p1',
         slug: 'amber-silk-candle',
         name: 'Amber Silk Candle',
         category: 'Luxury Candles',
@@ -34,12 +34,12 @@ export const products: Product[] = [
             '/images/lotus-urli-candle.png',
         ],
         variants: [
-            { id: 'v1', label: '200g', price: 1499, stock: 12 },
-            { id: 'v2', label: '400g', price: 2199, stock: 6 },
+            { _id: 'v1', label: '200g', price: 1499, stock: 12 },
+            { _id: 'v2', label: '400g', price: 2199, stock: 6 },
         ],
     },
     {
-        id: 'p2',
+        _id: 'p2',
         slug: 'saffron-mist-candle',
         name: 'Saffron Mist Candle',
         category: 'Soy Candles',
@@ -59,10 +59,10 @@ export const products: Product[] = [
             '/images/musk-rose-candle.png',
             '/images/lotus-urli-candle.png',
         ],
-        variants: [{ id: 'v3', label: 'Single', price: 1299, stock: 22 }],
+        variants: [{ _id: 'v3', label: 'Single', price: 1299, stock: 22 }],
     },
     {
-        id: 'p3',
+        _id: 'p3',
         slug: 'rose-velvet-candle',
         name: 'Rose Velvet Candle',
         category: 'Floral',
@@ -83,12 +83,12 @@ export const products: Product[] = [
             '/images/lotus-urli-candle.png',
         ],
         variants: [
-            { id: 'v4', label: '200g', price: 1699, stock: 7 },
-            { id: 'v5', label: '350g', price: 2399, stock: 2 },
+            { _id: 'v4', label: '200g', price: 1699, stock: 7 },
+            { _id: 'v5', label: '350g', price: 2399, stock: 2 },
         ],
     },
     {
-        id: 'p4',
+        _id: 'p4',
         slug: 'cedar-noir-candle',
         name: 'Cedar Noir Candle',
         category: 'Woody',
@@ -108,10 +108,10 @@ export const products: Product[] = [
             '/images/musk-rose-collection.png',
             '/images/musk-rose-candle.png',
         ],
-        variants: [{ id: 'v6', label: '200g', price: 1799, stock: 4 }],
+        variants: [{ _id: 'v6', label: '200g', price: 1799, stock: 4 }],
     },
     {
-        id: 'p5',
+        _id: 'p5',
         slug: 'meadow-silk-candle',
         name: 'Meadow Silk Candle',
         category: 'Fresh',
@@ -131,10 +131,10 @@ export const products: Product[] = [
             '/images/musk-rose-candle.png',
             '/images/lotus-urli-candle.png',
         ],
-        variants: [{ id: 'v7', label: '150g', price: 1199, stock: 30 }],
+        variants: [{ _id: 'v7', label: '150g', price: 1199, stock: 30 }],
     },
     {
-        id: 'p6',
+        _id: 'p6',
         slug: 'vanilla-ember-candle',
         name: 'Vanilla Ember Candle',
         category: 'Vanilla',
@@ -155,8 +155,8 @@ export const products: Product[] = [
             '/images/lotus-urli-candle.png',
         ],
         variants: [
-            { id: 'v8', label: '200g', price: 1399, stock: 7 },
-            { id: 'v9', label: '400g', price: 1999, stock: 6 },
+            { _id: 'v8', label: '200g', price: 1399, stock: 7 },
+            { _id: 'v9', label: '400g', price: 1999, stock: 6 },
         ],
     },
 ]

@@ -1,5 +1,5 @@
 export type Product = {
-  id: string
+  _id: string
   slug: string
   name: string
   category: string
@@ -16,7 +16,7 @@ export type Product = {
   images: string[]
   tags: string[]
   variants?: Array<{
-    id: string
+    _id: string
     label: string
     price: number
     stock: number
@@ -30,7 +30,7 @@ export type CartItem = {
 }
 
 export type Category = {
-  id: string
+  _id: string
   name: string
   slug: string
   count: number

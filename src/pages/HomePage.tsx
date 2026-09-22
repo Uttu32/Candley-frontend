@@ -14,6 +14,7 @@ export const HomePage = () => {
   const products = productsQuery.data?.items ?? []
   const categories = categoriesQuery.data ?? []
   const heroSlides = (heroQuery.data ?? []).filter((slide) => slide.active !== false)
+  console.log(products, 'these is products')
 
   return (
     <div className="home-page">
@@ -23,7 +24,7 @@ export const HomePage = () => {
             <div className="hero-slide active empty-state-hero"><div className="empty-state">No hero media has been published yet.</div></div>
           ) : (
             heroSlides.map((slide, index) => (
-              <div key={slide.id ?? slide._id ?? `${slide.heading}-${index}`} className={`hero-slide ${index === 0 ? 'active' : ''}`}>
+              <div key={slide._id ?? `${slide.heading}-${index}`} className={`hero-slide ${index === 0 ? 'active' : ''}`}>
                 {slide.desktopImage && <img src={slide.desktopImage} alt={slide.heading} />}
                 <div className="hero-copy">
                   <h1>{slide.heading}</h1>
@@ -46,7 +47,7 @@ export const HomePage = () => {
             <div className="empty-state full-width">No categories have been published yet.</div>
           ) : (
             categories.map((category) => (
-              <Link key={category.id} to={`/category/${category.slug}`} className="category-card">
+              <Link key={category._id} to={`/category/${category.slug}`} className="category-card">
                 <img src={category.image} alt={category.name} />
                 <div>
                   <h3>{category.name}</h3>
@@ -66,11 +67,11 @@ export const HomePage = () => {
         <div className="product-grid">
           {products.length === 0 ? (
             <div className="empty-state full-width">No products are available yet. The catalog will appear here once the admin publishes inventory.</div>
-          ) : products.map((product) => {
-            const isLiked = wishlist.includes(product.id)
+          ) : products?.map((product) => {
+            const isLiked = wishlist.includes(product._id)
             return (
               <article
-                key={product.id}
+                key={product._id}
                 className="product-card"
                 role="link"
                 tabIndex={0}
@@ -92,7 +93,7 @@ export const HomePage = () => {
                     aria-pressed={isLiked}
                     onClick={(event) => {
                       event.stopPropagation()
-                      toggleWishlist(product.id)
+                      toggleWishlist(product._id)
                       triggerToast(isLiked ? 'Removed from wishlist' : 'Added to wishlist')
                     }}
                   >
@@ -116,7 +117,7 @@ export const HomePage = () => {
                       className="primary-button small"
                       onClick={(event) => {
                         event.stopPropagation()
-                        addToCart(product.id, 1, product.variants?.[0]?.id)
+                        addToCart(product?._id, 1, product.variants?.[0]?._id)
                         triggerToast('Added to cart')
                       }}
                     >

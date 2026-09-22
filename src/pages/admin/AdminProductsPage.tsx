@@ -39,13 +39,34 @@ export const AdminProductsPage = () => {
     {productsQuery.isError && <div className="account-empty-state"><h2>Unable to load products</h2><p>{productsQuery.error instanceof Error ? productsQuery.error.message : 'Please try again later.'}</p></div>}
     {!productsQuery.isLoading && !productsQuery.isError && products.length === 0 && <div className="account-empty-state"><h2>No products yet</h2><p>Add your first product to start building the catalog.</p></div>}
     {products.length > 0 &&
-      <div className="product-grid wide admin-product-grid">
+      <div className="product-grid wide border-2 border-red-500 admin-product-grid">
         {products.map((item) =>
-          <article key={item.id} className="product-card w-1/5 flex">
-            <div className="product-media max-w-[85%] align-self-center">
-              <img src={item.images[0]} alt={item.name} />
+          <article key={item._id} className="product-card w-1/5 flex flex-col">
+            <div className="product-media w-full">
+              <img
+                src={item.images[0]}
+                alt={item.name}
+
+
+
+                
+                className="w-full h-full object-cover"
+              />
             </div>
-            <div className="product-body"><div className="product-meta"><span>{item.category}</span><span>{item.stock} in stock</span></div><h3>{item.name}</h3><div className="price-row"><strong>₹{item.price}</strong><span>₹{item.mrp}</span></div></div>
+
+            <div className="product-body w-full">
+              <div className="product-meta">
+                <span>{item.category}</span>
+                <span>{item.stock} in stock</span>
+              </div>
+
+              <h3>{item.name}</h3>
+
+              <div className="price-row">
+                <strong>₹{item.price}</strong>
+                <span>₹{item.mrp}</span>
+              </div>
+            </div>
           </article>)}</div>}
     {isCreateRoute && <div className="drawer-backdrop" role="presentation" onClick={() => navigate('/admin/products')}>
       <aside className="admin-product-drawer" role="dialog" aria-modal="true" aria-labelledby="add-product-title" onClick={(event) => event.stopPropagation()}>

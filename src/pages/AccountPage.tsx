@@ -29,7 +29,14 @@ export const AccountPage = () => {
   const { addToCart, toggleWishlist, wishlist } = useAppStore()
   const wishlistQuery = useQuery({ queryKey: ['wishlist'], queryFn: api.wishlist, enabled: Boolean(getAccessToken()), retry: false })
   const ordersQuery = useQuery({ queryKey: ['orders'], queryFn: api.orders, enabled: Boolean(getAccessToken()), retry: false })
-  const savedProducts = wishlistQuery.data?.productIds ?? fallbackProducts.filter((product) => wishlist.includes(product.id))
+  const productsQuery = useQuery({ queryKey: ['products', 'account'], queryFn: () => api.products(new URLSearchParams({ limit: '100' })), retry: false })
+
+  const wishlistProductIds = (wishlist.length > 0
+    ? wishlist
+    : (wishlistQuery.data?.productIds ?? []).map((product) => (typeof product === 'string' ? product : product?._id)).filter((id): id is string => Boolean(id)))
+
+  const catalogProducts = productsQuery.data?.items ?? fallbackProducts
+  const savedProducts = catalogProducts.filter((product) => wishlistProductIds.includes(product._id))
   const isWishlistPage = location.pathname === '/account/wishlist'
   const isOrdersPage = location.pathname === '/account/orders'
   const isSettingsPage = location.pathname === '/account/settings'
@@ -143,7 +150,7 @@ export const AccountPage = () => {
             ) : (
               <div className="wishlist-list">
                 {savedProducts.map((product) => (
-                  <article key={product.id} className="wishlist-row">
+                  <article key={product._id} className="wishlist-row">
                     <img src={product.images[0]} alt={product.name} />
                     <div className="wishlist-row-copy">
                       <span className="eyebrow">{product.collection}</span>
@@ -155,7 +162,7 @@ export const AccountPage = () => {
                         type="button"
                         className="primary-button small"
                         onClick={() => {
-                          addToCart(product.id, 1, product.variants?.[0]?.id)
+                          addToCart(product?._id, 1, product.variants?.[0]?._id)
                           triggerToast('Added to cart')
                         }}
                       >
@@ -165,7 +172,7 @@ export const AccountPage = () => {
                         type="button"
                         className="text-button"
                         onClick={() => {
-                          toggleWishlist(product.id)
+                          toggleWishlist(product?._id)
                           triggerToast('Removed from wishlist')
                         }}
                       >

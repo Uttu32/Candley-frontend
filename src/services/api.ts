@@ -2,7 +2,7 @@ import type { CartItem, Category, Product } from '../types'
 import type { AccountProfile } from './account'
 
 export type ApiEnvelope<T> = { success: boolean; message: string; data: T; errors?: unknown[] }
-export type AuthUser = { id: string; name: string; email: string; role: 'CUSTOMER' | 'ADMIN' | 'SUPER_ADMIN' | 'STAFF'; emailVerified?: boolean }
+export type AuthUser = { _id: string; name: string; email: string; role: 'CUSTOMER' | 'ADMIN' | 'SUPER_ADMIN' | 'STAFF'; emailVerified?: boolean }
 export type AuthSession = { accessToken: string; user: AuthUser }
 export type ProductList = { items: Product[]; pagination: { page: number; limit: number; total: number; totalPages: number } }
 export type AnnouncementBar = {
@@ -13,7 +13,6 @@ export type AnnouncementBar = {
 }
 export type HeroSlide = {
   _id?: string
-  id?: string
   heading: string
   subheading: string
   ctaText?: string
@@ -59,12 +58,35 @@ export type AdminDashboard = {
 }
 
 const baseUrl = () => ((import.meta.env.VITE_API_BASE_URL as string | undefined) ?? '').replace(/\/$/, '')
+const tokenStorageKey = 'candley-aroma-access-token'
 
-let accessToken: string | null = null
+const readStoredToken = () => {
+  try {
+    return window.localStorage.getItem(tokenStorageKey)
+  } catch {
+    return null
+  }
+}
+
+let accessToken: string | null = readStoredToken()
 
 export const getAccessToken = () => accessToken
-export const setAccessToken = (token: string) => { accessToken = token }
-export const clearAccessToken = () => { accessToken = null }
+export const setAccessToken = (token: string) => {
+  accessToken = token
+  try {
+    window.localStorage.setItem(tokenStorageKey, token)
+  } catch {
+    // no-op for private browsing / storage-disabled situations
+  }
+}
+export const clearAccessToken = () => {
+  accessToken = null
+  try {
+    window.localStorage.removeItem(tokenStorageKey)
+  } catch {
+    // no-op for private browsing / storage-disabled situations
+  }
+}
 
 const request = async <T>(path: string, init: RequestInit = {}, canRefresh = true): Promise<T> => {
   const headers = new Headers(init.headers)
@@ -116,6 +138,7 @@ export const api = {
     return request<Product>('/api/v1/admin/products', { method: 'POST', body })
   },
   adminHeroSlides: () => request<HeroSlide[]>('/api/v1/admin/cms/hero'),
+  createHeroSlide: (input: Partial<HeroSlide>) => request<HeroSlide>('/api/v1/admin/cms/hero', { method: 'POST', body: JSON.stringify(input) }),
   updateHeroImage: async (slideId: string, image: File, target: 'desktopImage' | 'mobileImage') => {
     const body = new FormData()
     body.set('image', image)
@@ -139,6 +162,6 @@ export const api = {
   orders: () => request<Order[]>('/api/v1/orders'),
   order: (id: string) => request<Order>(`/api/v1/orders/${encodeURIComponent(id)}`),
   createOrder: (input: { shippingAddress: Address; paymentMethod: 'RAZORPAY' | 'COD' }) => request<Order>('/api/v1/orders', { method: 'POST', body: JSON.stringify(input) }),
-  profile: () => request<AccountProfile & { id: string; role: string; emailVerified: boolean }>('/api/v1/auth/me'),
-  updateProfile: (profile: AccountProfile) => request<AccountProfile & { id: string; role: string; emailVerified: boolean }>('/api/v1/auth/me', { method: 'PATCH', body: JSON.stringify(profile) }),
+  profile: () => request<AccountProfile & { _id: string; role: string; emailVerified: boolean }>('/api/v1/auth/me'),
+  updateProfile: (profile: AccountProfile) => request<AccountProfile & { _id: string; role: string; emailVerified: boolean }>('/api/v1/auth/me', { method: 'PATCH', body: JSON.stringify(profile) }),
 }
