@@ -46,20 +46,21 @@ export const StorefrontLayout = () => {
         .filter((id): id is string => Boolean(id)),
     )).catch(() => undefined)
   }, [replaceCart, replaceWishlist, setUser])
-
+  
   const cartProducts = cartItems.map((item) => {
     const product = products.find((entry) => entry._id === item.productId) ?? products[0]
     return { ...item, product }
   })
-
+  
   const normalizedSearchQuery = searchQuery.trim().toLowerCase()
   const searchResults = products.filter((product) =>
     [product.name, product.category, product.collection, product.fragrance, ...product.tags]
-      .join(' ')
-      .toLowerCase()
-      .includes(normalizedSearchQuery),
-  )
+  .join(' ')
+  .toLowerCase()
+  .includes(normalizedSearchQuery),
+)
 
+console.log(cartItems, "this is cartItems", {products,searchResults});
   const closeSearch = () => {
     setSearchQuery('')
     toggleSearch()
@@ -174,7 +175,7 @@ export const StorefrontLayout = () => {
                         closeSearch()
                       }}
                     >
-                      <img src={product.images[0]} alt="" />
+                      <img src={product?.thumbnailImage} alt="" />
                       <span>
                         <strong>{product.name}</strong>
                         <small>{product.fragrance}</small>
@@ -209,7 +210,7 @@ export const StorefrontLayout = () => {
               ) : (
                 cartProducts.map(({ product, quantity, variantId }) => (
                   <div key={`${product._id}-${variantId ?? 'default'}`} className="cart-item-row cart-drawer-item">
-                    <div className="mini-thumb" style={{ backgroundImage: `url(${product.images[0]})` }} />
+                    <div className="mini-thumb" style={{ backgroundImage: `url(${product.thumbnailImage})` }} />
                     <div className="drawer-item-copy">
                       <strong>{product.name}</strong>
                       <span>{product.fragrance}</span>

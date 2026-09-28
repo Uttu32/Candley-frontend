@@ -130,6 +130,21 @@ export const api = {
     if (params?.search) query.set('search', params.search)
     return request<ProductList>(`/api/v1/admin/products?${query.toString()}`)
   },
+  updateAdminProduct: async (productId: string, input: AdminProductInput, images: File[], thumbnailIndex: number  ) => {
+    const body = new FormData()
+    body.set('product', JSON.stringify(input))
+    body.set('thumbnailIndex', String(thumbnailIndex))
+    images.forEach((image) => {
+      body.append('images', image)
+    })
+    return request<Product>(
+      `/api/v1/admin/products/${encodeURIComponent(productId)}`,
+      {
+        method: 'PATCH',
+        body,
+      }
+    )
+  },
   createAdminProduct: async (input: AdminProductInput, images: File[], thumbnailIndex: number) => {
     const body = new FormData()
     body.set('product', JSON.stringify(input))

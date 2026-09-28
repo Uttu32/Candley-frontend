@@ -33,13 +33,13 @@ export const ProductPage = () => {
   )
 
   const [selectedVariantId, setSelectedVariantId] = useState(
-    variants[0]?._id ?? 'default',
+    variants[0]?._id,
   )
 
   const [quantity, setQuantity] = useState(1)
 
   useEffect(() => {
-    setSelectedVariantId(variants[0]?._id ?? 'default')
+    setSelectedVariantId(variants[0]?._id)
     setQuantity(1)
   }, [product?._id, variants])
 

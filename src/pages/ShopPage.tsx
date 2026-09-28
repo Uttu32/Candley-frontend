@@ -121,7 +121,7 @@ export const ShopPage = () => {
                     }}
                   >
                     <div className="product-media">
-                      <img src={product.images[0]} alt={product.name} />
+                      <img src={product?.thumbnailImage} alt={product.name} />
                       {product.badge && <span className="product-badge">{product.badge}</span>}
                       <button
                         type="button"
@@ -139,12 +139,12 @@ export const ShopPage = () => {
                       </button>
                     </div>
                     <div className="product-body">
-                      <div className="product-meta">
+                      <div className="product-meta px-2">
                         <span>{product.collection}</span>
                         <span>{product.fragrance}</span>
                       </div>
-                      <h3>{product.name}</h3>
-                      <div className="price-row">
+                      <h3 className='px-2'>{product.name}</h3>
+                      <div className="price-row px-2">
                         <strong>₹{product.price}</strong>
                         <span>₹{product.mrp}</span>
                       </div>

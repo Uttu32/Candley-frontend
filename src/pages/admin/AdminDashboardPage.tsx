@@ -32,14 +32,20 @@ export const AdminDashboardPage = () => {
     <section>
       <h2>Dashboard</h2>
       <div className="stats-grid">
-        <div className="stat-card"><span>Total sales</span><strong>{formatCurrency(metrics.totalSales)}</strong></div>
-        <div className="stat-card"><span>Total orders</span><strong>{metrics.totalOrders}</strong></div>
-        <div className="stat-card"><span>Total customers</span><strong>{metrics.totalCustomers}</strong></div>
-        {metrics.conversionRate !== undefined && <div className="stat-card"><span>Conversion rate</span><strong>{metrics.conversionRate}%</strong></div>}
-        <div className="stat-card"><span>Pending orders</span><strong>{metrics.pendingOrders}</strong></div>
-        <div className="stat-card"><span>Out-of-stock products</span><strong>{metrics.outOfStockProducts}</strong></div>
-        <div className="stat-card"><span>Average order value</span><strong>{formatCurrency(metrics.averageOrderValue)}</strong></div>
+        {[{'label': 'Total sales', 'value': formatCurrency(metrics.totalSales)},
+          {'label': 'Total orders', 'value': metrics.totalOrders},
+          {'label': 'Total customers', 'value': metrics.totalCustomers},
+          {'label': 'Pending orders', 'value': metrics.pendingOrders},
+          {'label': 'Out-of-stock products', 'value': `${metrics.outOfStockProducts}`},
+          {'label': 'Average order value', 'value': formatCurrency(metrics.averageOrderValue)},
+        ]?.map((stat) => (
+          <div className="stat-card flex flex-col" key={stat.label}>
+            <span>{stat.label}</span>
+            <strong>{stat.value}</strong>
+          </div> 
+        ))}
       </div>
+
       {metrics.revenueSeries && metrics.revenueSeries.length > 0 && (
         <div className="admin-panel">
           <h3>Revenue over time</h3>

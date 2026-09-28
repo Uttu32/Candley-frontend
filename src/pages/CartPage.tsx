@@ -8,11 +8,11 @@ export const CartPage = () => {
   const { cartItems, removeFromCart, updateQuantity } = useAppStore()
   const productsQuery = useQuery({ queryKey: ['products', 'cart'], queryFn: () => api.products(new URLSearchParams({ limit: '100' })), retry: false })
   const products = productsQuery.data?.items ?? fallbackProducts
-console.log(cartItems, 'this is cartItems', products)
   const cartProducts = cartItems.map((item) => {
     const product = products.find((entry) => entry._id === item.productId) ?? products[0]
     return { ...item, product }
   })
+  // console.log(cartItems, 'this is cartItems', {products,cartProducts})
 
   return (
     <div className="container section-spacing cart-page">
@@ -27,7 +27,7 @@ console.log(cartItems, 'this is cartItems', products)
           ) : (
             cartProducts.map(({ product, quantity, variantId }) => (
               <div key={`${product._id}-${variantId ?? 'default'}`} className="cart-row">
-                <img src={product.images[0]} alt={product.name} />
+                <img src={product?.thumbnailImage} alt={product.name} />
                 <div>
                   <h3>{product.name}</h3>
                   <p>{product.fragrance}</p>
