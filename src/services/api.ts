@@ -44,7 +44,9 @@ export type AdminProductInput = {
 }
 export type ApiCart = { userId: string; items: Array<{ productId: Product; variantId?: string; quantity: number }> }
 export type Address = { name: string; phone: string; addressLine1: string; city: string; state: string; postalCode: string; country: string }
-export type Order = { _id: string; orderNumber: string; items: Array<{ productName: string; quantity: number; unitPrice: number; lineTotal: number; image?: string }>; subtotal: number; shipping: number; tax: number; total: number; paymentMethod: 'RAZORPAY' | 'COD'; paymentStatus: string; status: string; shippingAddress: Address; createdAt: string }
+export type Order = {
+  _id: string; orderNumber: string; items: Array<{ productName: string; quantity: number; unitPrice: number; lineTotal: number; image?: string, productId: string; sku: string; thumbnailImage: string; }>; subtotal: number; shipping: number; tax: number; total: number; paymentMethod: 'RAZORPAY' | 'COD'; paymentStatus: string; status: string; shippingAddress: Address; createdAt: string;  
+}
 export type AdminDashboard = {
   totalSales: number
   totalOrders: number
@@ -130,7 +132,7 @@ export const api = {
     if (params?.search) query.set('search', params.search)
     return request<ProductList>(`/api/v1/admin/products?${query.toString()}`)
   },
-  updateAdminProduct: async (productId: string, input: AdminProductInput, images: File[], thumbnailIndex: number  ) => {
+  updateAdminProduct: async (productId: string, input: AdminProductInput, images: File[], thumbnailIndex: number) => {
     const body = new FormData()
     body.set('product', JSON.stringify(input))
     body.set('thumbnailIndex', String(thumbnailIndex))

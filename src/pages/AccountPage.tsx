@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { products as fallbackProducts } from "../data/mock";
 import { useQuery } from "@tanstack/react-query";
 import { triggerToast } from "../components/common/ToastContainer";
 import { useAppStore } from "../store/useAppStore";
@@ -54,7 +53,7 @@ export const AccountPage = () => {
           )
           .filter((id): id is string => Boolean(id));
 
-  const catalogProducts = productsQuery.data?.items ?? fallbackProducts;
+  const catalogProducts = productsQuery?.data?.items ?? [];
   const savedProducts = catalogProducts.filter((product) =>
     wishlistProductIds.includes(product._id),
   );

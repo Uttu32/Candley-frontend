@@ -147,20 +147,20 @@ export const AdminProductsPage = () => {
     });
   };
 
-  const removeNewImage = (index: number) => {
-    setImages((previousImages) =>
-      previousImages.filter((_, imageIndex) => imageIndex !== index),
-    );
+  // const removeNewImage = (index: number) => {
+  //   setImages((previousImages) =>
+  //     previousImages.filter((_, imageIndex) => imageIndex !== index),
+  //   );
 
-    // New images come after existing images
-    const removedImageIndex = existingImages.length + index;
+  //   // New images come after existing images
+  //   const removedImageIndex = existingImages.length + index;
 
-    setThumbnailIndex((previousIndex) => {
-      if (removedImageIndex === previousIndex) return 0;
-      if (removedImageIndex < previousIndex) return previousIndex - 1;
-      return previousIndex;
-    });
-  };
+  //   setThumbnailIndex((previousIndex) => {
+  //     if (removedImageIndex === previousIndex) return 0;
+  //     if (removedImageIndex < previousIndex) return previousIndex - 1;
+  //     return previousIndex;
+  //   });
+  // };
 
   useEffect(() => {
     if (!isEditMode) {
@@ -186,7 +186,7 @@ export const AdminProductsPage = () => {
     setProduct({
       name: existingProduct.name,
       slug: existingProduct.slug,
-      sku: existingProduct.sku,
+      sku: existingProduct.sku ?? "",
       category: existingProduct.category,
       collection: existingProduct.collection,
       fragrance: existingProduct.fragrance,
@@ -196,9 +196,19 @@ export const AdminProductsPage = () => {
       mrp: existingProduct.mrp,
       stock: existingProduct.stock,
       tags: existingProduct.tags ?? [],
-      status: existingProduct.status,
+      status:
+        existingProduct.status === "ACTIVE" ||
+        existingProduct.status === "OUT_OF_STOCK" ||
+        existingProduct.status === "ARCHIVED"
+          ? existingProduct.status
+          : "DRAFT",
       featured: existingProduct.featured ?? false,
-      variants: existingProduct.variants ?? [],
+      variants: (existingProduct?.variants ?? []).map((variant) => ({
+        label: variant.label,
+        sku: "",
+        price: variant.price,
+        stock: variant.stock,
+      })),
     });
 
     setExistingImages(existingProduct.images ?? []);

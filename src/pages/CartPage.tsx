@@ -1,60 +1,113 @@
 import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { useAppStore } from '../store/useAppStore'
-import { products as fallbackProducts } from '../data/mock'
 import { api } from '../services/api'
 
 export const CartPage = () => {
   const { cartItems, removeFromCart, updateQuantity } = useAppStore()
-  const productsQuery = useQuery({ queryKey: ['products', 'cart'], queryFn: () => api.products(new URLSearchParams({ limit: '100' })), retry: false })
-  const products = productsQuery.data?.items ?? fallbackProducts
-  const cartProducts = cartItems.map((item) => {
-    const product = products.find((entry) => entry._id === item.productId) ?? products[0]
-    return { ...item, product }
+
+  const productsQuery = useQuery({
+    queryKey: ['products', 'cart'],
+    queryFn: () => api.products(new URLSearchParams({ limit: '100' })),
+    retry: false,
   })
-  // console.log(cartItems, 'this is cartItems', {products,cartProducts})
+
+  const products = productsQuery.data?.items ?? []
+
+  const cartProducts = cartItems
+    .map((item) => {
+      const product = products.find((entry) => entry._id === item.productId)
+
+      if (!product) return null
+
+      return { ...item, product }
+    })
+    .filter((item) => item !== null)
 
   return (
     <div className="container section-spacing cart-page">
       <div className="cart-layout">
         <div className="cart-items">
           <h1>Your cart</h1>
+
           {cartItems.length === 0 ? (
             <div className="empty-state">
               <h3>Your candle shelf is waiting.</h3>
-              <Link to="/shop" className="primary-button">Explore Candles</Link>
+              <Link to="/shop" className="primary-button">
+                Explore Candles
+              </Link>
             </div>
           ) : (
             cartProducts.map(({ product, quantity, variantId }) => (
-              <div key={`${product._id}-${variantId ?? 'default'}`} className="cart-row">
-                <img src={product?.thumbnailImage} alt={product.name} />
+              <div
+                key={`${product._id}-${variantId ?? 'default'}`}
+                className="cart-row"
+              >
+                <img
+                  src={product.thumbnailImage}
+                  alt={product.name}
+                />
+
                 <div>
                   <h3>{product.name}</h3>
                   <p>{product.fragrance}</p>
                 </div>
+
                 <div className="quantity-control">
-                  <button type="button" onClick={() => updateQuantity(product._id, variantId, quantity - 1)}>−</button>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      updateQuantity(product._id, variantId, quantity - 1)
+                    }
+                  >
+                    −
+                  </button>
+
                   <span>{quantity}</span>
-                  <button type="button" onClick={() => updateQuantity(product._id, variantId, quantity + 1)}>+</button>
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      updateQuantity(product._id, variantId, quantity + 1)
+                    }
+                  >
+                    +
+                  </button>
                 </div>
+
                 <strong>₹{product.price * quantity}</strong>
-                <button type="button" className="text-button" onClick={() => removeFromCart(product._id, variantId)}>
+
+                <button
+                  type="button"
+                  className="text-button"
+                  onClick={() => removeFromCart(product._id, variantId)}
+                >
                   Remove
                 </button>
               </div>
             ))
           )}
         </div>
+
         <aside className="summary-panel">
           <h3>Order summary</h3>
+
           <div className="summary-row">
             <span>Subtotal</span>
-            <strong>₹{cartProducts.reduce((sum, item) => sum + item.product.price * item.quantity, 0)}</strong>
+            <strong>
+              ₹
+              {cartProducts.reduce(
+                (sum, item) => sum + item.product.price * item.quantity,
+                0
+              )}
+            </strong>
           </div>
+
           <div className="summary-row">
             <span>Shipping</span>
             <strong>Free</strong>
           </div>
+
           <Link to="/checkout" className="primary-button full-width">
             Proceed to checkout
           </Link>

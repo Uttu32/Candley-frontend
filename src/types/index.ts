@@ -8,8 +8,12 @@ export type Product = {
   description: string
   shortDescription: string
   price: number
+  thumbnailImage: string
   mrp: number
+  sku: string
   rating: number
+  featured: boolean
+  status: string
   reviews: number
   badge: 'Bestseller' | 'New' | 'Limited' | 'Trending' | 'Sale' | 'Sold Out' | 'Low Stock' | null
   stock: number
