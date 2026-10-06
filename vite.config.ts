@@ -6,7 +6,7 @@ export default defineConfig({
   server: {
     host: '0.0.0.0',
     port: 5173,
-    allowedHosts: ['your-ngrok-domain.ngrok-free.dev'],
+    allowedHosts: ['https://candley-backend.onrender.com'],
     proxy: {
       '/api': {
         target: 'https://candley-backend.onrender.com',
