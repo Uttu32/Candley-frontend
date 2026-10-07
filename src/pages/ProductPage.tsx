@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { ApiError, catalogApi, cmsApi } from '../services/api'
 import type { Product } from '../types'
 import { formatInr } from '../utils/format'
@@ -10,19 +11,31 @@ import { ProductCard, WishlistButton } from '../components/product/ProductCard'
 import { ErrorState, Skeleton } from '../components/common/Feedback'
 import { PageMeta } from '../components/common/PageMeta'
 import { triggerToast } from '../components/common/ToastContainer'
+import { CdnImage } from '../components/common/CdnImage'
 
 const Gallery = ({ product }: { product: Product }) => {
   const images = product.images.length ? product.images : product.thumbnailImage ? [product.thumbnailImage] : []
   const [active, setActive] = useState(Math.max(images.indexOf(product.thumbnailImage), 0))
   if (images.length === 0) return <div className="product-gallery"><div className="image-placeholder gallery-main" role="img" aria-label="No image available" /></div>
+  const many = images.length > 1
+  const go = (next: number) => setActive((next + images.length) % images.length)
   return (
     <div className="product-gallery">
-      <img className="gallery-main" src={images[active]} alt={`${product.name}, image ${active + 1} of ${images.length}`} decoding="async" />
-      {images.length > 1 && (
+      <div className="gallery-stage">
+        <CdnImage key={images[active]} className="gallery-main" src={images[active]!} width={720} loading="eager" fetchPriority="high" alt={`${product.name}, image ${active + 1} of ${images.length}`} />
+        {many && (
+          <>
+            <button type="button" className="gallery-nav is-prev" onClick={() => go(active - 1)} aria-label="Previous image"><ChevronLeft size={20} /></button>
+            <button type="button" className="gallery-nav is-next" onClick={() => go(active + 1)} aria-label="Next image"><ChevronRight size={20} /></button>
+            <span className="gallery-count" aria-hidden="true">{active + 1} / {images.length}</span>
+          </>
+        )}
+      </div>
+      {many && (
         <div className="gallery-thumbs" role="group" aria-label="Product images">
           {images.map((image, index) => (
-            <button key={image} type="button" className={`gallery-thumb ${index === active ? 'active' : ''}`} onClick={() => setActive(index)} aria-label={`Show image ${index + 1}`} aria-current={index === active ? 'true' : undefined}>
-              <img src={image} alt="" loading="lazy" decoding="async" />
+            <button key={`${index}-${image}`} type="button" className={`gallery-thumb ${index === active ? 'active' : ''}`} onClick={() => setActive(index)} aria-label={`Show image ${index + 1}`} aria-current={index === active ? 'true' : undefined}>
+              <CdnImage src={image} width={96} />
             </button>
           ))}
         </div>
@@ -147,8 +160,8 @@ export const ProductPage = () => {
         <Link to="/shop">Shop</Link> <span aria-hidden="true">/</span> <span aria-current="page">{product.name}</span>
       </nav>
       <div className="product-page">
-        <Gallery key={product._id} product={product} />
-        <ProductDetail key={product._id} product={product} maxPerItem={optionsQuery.data?.maxQuantityPerItem ?? 10} />
+        <Gallery key={`gallery-${product._id}`} product={product} />
+        <ProductDetail key={`detail-${product._id}`} product={product} maxPerItem={optionsQuery.data?.maxQuantityPerItem ?? 10} />
       </div>
       {(relatedQuery.data?.length ?? 0) > 0 && (
         <section className="section-spacing" aria-labelledby="related-heading">

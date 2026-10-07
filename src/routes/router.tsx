@@ -1,5 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
-import { createBrowserRouter, Navigate, Outlet, type RouteObject } from 'react-router-dom'
+import { createBrowserRouter, Navigate, Outlet, ScrollRestoration, type RouteObject } from 'react-router-dom'
 import { lazy, Suspense, type ComponentType } from 'react'
 import { CandleLoader } from '../components/common/CandleLoader'
 import { ProtectedRoute } from '../components/common/ProtectedRoute'
@@ -43,9 +43,13 @@ const AdminCouponsPage = page(() => import('../pages/admin/AdminSettingsPages'),
 const AdminSettingsPage = page(() => import('../pages/admin/AdminSettingsPages'), 'AdminSettingsPage')
 
 const Lazy = () => (
-  <Suspense fallback={<CandleLoader />}>
-    <Outlet />
-  </Suspense>
+  <>
+    {/* New pages open at the top; back/forward restores the previous position. */}
+    <ScrollRestoration />
+    <Suspense fallback={<CandleLoader />}>
+      <Outlet />
+    </Suspense>
+  </>
 )
 
 export const routes: RouteObject[] = [

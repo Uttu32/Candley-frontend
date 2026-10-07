@@ -23,7 +23,7 @@ const AboutPage = () => {
     <div className="about-page">
       <PageMeta title="Our story" description="Candley Aroma hand-pours clean-burning soy candles in India. Discover our ingredients, process and fragrance families." canonicalPath="/about" />
       <section className="about-hero">
-        <img src="/images/lotus-urli-candle.png" alt="A glowing Candley Aroma candle ritual" />
+        <img src="/images/about-tealights.jpg" alt="Rows of lit tealight candles glowing in the dark" fetchPriority="high" decoding="async" />
         <div className="about-hero-overlay" />
         <motion.div className="about-hero-copy" initial="hidden" animate="visible" variants={reveal}>
           <span className="eyebrow">Our story</span>
@@ -34,7 +34,7 @@ const AboutPage = () => {
       </section>
 
       <motion.section className="about-intro container" initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.2 }} variants={reveal}>
-        <div className="about-intro-image"><img src="/images/musk-rose-candle.png" alt="Rose-shaped Musk Rose candle in a glass vessel" /></div>
+        <div className="about-intro-image"><img src="/images/about-living-room.jpg" alt="Candle jars and fresh tulips on a coffee table in afternoon light" loading="lazy" decoding="async" /></div>
         <div className="about-intro-copy">
           <span className="eyebrow">The art of candlelight</span>
           <h2>We Create Fragrance for the Moments That Matter.</h2>
@@ -56,7 +56,7 @@ const AboutPage = () => {
       </section>
 
       <section className="craft-section container section-spacing">
-        <div className="craft-image"><img src="/images/musk-rose-collection.png" alt="Two rose candles prepared for a quiet ritual" /></div>
+        <div className="craft-image"><img src="/images/about-beeswax-candle.jpg" alt="A hand-rolled beeswax candle burning against a pale wall" loading="lazy" decoding="async" /></div>
         <div className="craft-copy"><span className="eyebrow">The craft behind the flame</span><h2>Thoughtfully Made. Beautifully Burned.</h2><p>Every candle begins with a careful balance of wax, fragrance and flame.</p><p>From selecting the right wax blend to testing the wick and refining the fragrance throw, every detail matters.</p><p>Our approach is simple: create candles that look beautiful, smell exceptional and burn beautifully.</p><div className="craft-note"><Flame size={18} /><span>Considered details, from first pour to final burn.</span></div></div>
       </section>
 
@@ -68,15 +68,15 @@ const AboutPage = () => {
 
       <section className="ritual-section container section-spacing"><div className="about-section-heading"><span className="eyebrow">Small rituals, beautifully lived</span><h2>Turn the Everyday Into a Ritual</h2></div><div className="ritual-grid">{rituals.map(([time, title, copy], index) => <article key={time} className="ritual-item"><img src={index % 2 === 0 ? '/images/musk-rose-collection.png' : '/images/lotus-urli-candle.png'} alt={`${time.toLowerCase()} candle ritual`} /><div><span>{time}</span><h3>{title}</h3><p>{copy}</p></div></article>)}</div></section>
 
-      <section className="care-section container section-spacing"><div className="care-copy"><span className="eyebrow">A little care goes a long way</span><h2>Make Every Burn Beautiful</h2><p>Allow the wax to melt evenly across the surface during the first burn. Keep the wick trimmed appropriately before lighting and avoid burning continuously for excessive periods.</p><p>Always place your candle on a stable, heat-resistant surface away from drafts and flammable objects. Never leave a burning candle unattended.</p><Link to="/shop" className="secondary-button">Discover candle care <ArrowRight size={15} /></Link></div><div className="care-image"><img src="/images/lotus-urli-candle.png" alt="Candle flame on a stable decorative holder" /></div></section>
+      <section className="care-section container section-spacing"><div className="care-copy"><span className="eyebrow">A little care goes a long way</span><h2>Make Every Burn Beautiful</h2><p>Allow the wax to melt evenly across the surface during the first burn. Keep the wick trimmed appropriately before lighting and avoid burning continuously for excessive periods.</p><p>Always place your candle on a stable, heat-resistant surface away from drafts and flammable objects. Never leave a burning candle unattended.</p><Link to="/shop" className="secondary-button">Discover candle care <ArrowRight size={15} /></Link></div><div className="care-image"><img src="/images/about-beeswax-candle.jpg" alt="A single candle burning safely upright" loading="lazy" decoding="async" /></div></section>
 
       <section className="responsibility-section"><div className="container responsibility-inner"><span className="eyebrow">Designed with intention</span><h2>Beautiful products should be thoughtfully considered at every stage.</h2><p>From the ingredients we select to the packaging they arrive in, we keep our attention on the experience of bringing fragrance into your home.</p></div></section>
 
-      <section className="people-section container section-spacing"><div className="people-image"><img src="/images/musk-rose-collection.png" alt="Candles and flowers arranged for a fragrance ritual" /></div><div className="people-copy"><span className="eyebrow">The people behind the brand</span><h2>Made With Curiosity, Care & a Love for Fragrance</h2><p>Candley is shaped by a small, curious creative practice that pays attention to scent, light, texture and the feeling a beautiful object brings into a room.</p><p>Our stories are still being written. What remains constant is a love for making fragrance feel personal, generous and easy to live with.</p></div></section>
+      <section className="people-section container section-spacing"><div className="people-image"><img src="/images/about-jar-lantern.jpg" alt="A candle in a lace-wrapped glass jar hanging among warm string lights" loading="lazy" decoding="async" /></div><div className="people-copy"><span className="eyebrow">The people behind the brand</span><h2>Made With Curiosity, Care & a Love for Fragrance</h2><p>Candley is shaped by a small, curious creative practice that pays attention to scent, light, texture and the feeling a beautiful object brings into a room.</p><p>Our stories are still being written. What remains constant is a love for making fragrance feel personal, generous and easy to live with.</p></div></section>
 
       <section className="values-section container section-spacing"><div className="about-section-heading"><span className="eyebrow">What guides us</span><h2>Our Values</h2></div><div className="values-grid">{aboutValues.map(([title, copy]) => <article key={title}><Check size={18} /><h3>{title}</h3><p>{copy}</p></article>)}</div></section>
 
-      <section className="about-quote"><img src="/images/lotus-urli-candle.png" alt="Candle flame glowing in a warm room" /><div><Sparkles size={20} /><blockquote>“Light a candle.<br />Slow down.<br />Let the moment linger.”</blockquote></div></section>
+      <section className="about-quote"><img src="/images/about-jar-lantern.jpg" alt="" loading="lazy" decoding="async" /><div><Sparkles size={20} /><blockquote>“Light a candle.<br />Slow down.<br />Let the moment linger.”</blockquote></div></section>
 
       <section className="promise-section container section-spacing"><span className="eyebrow">Our promise</span><h2>Beautiful Scents. Meaningful Moments.</h2><p>We create candles for more than beautiful rooms. We create them for the quiet moments, the celebrations, the conversations, the pauses and the memories that make a house feel like home.</p><Link to="/shop" className="primary-button">Explore the collection <ArrowRight size={16} /></Link></section>
 

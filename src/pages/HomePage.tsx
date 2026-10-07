@@ -6,6 +6,7 @@ import { HeroFallback, HeroSlider } from '../components/hero/HeroSlider'
 import { ProductCard } from '../components/product/ProductCard'
 import { ErrorState, ProductGridSkeleton, Skeleton } from '../components/common/Feedback'
 import { PageMeta } from '../components/common/PageMeta'
+import { CdnImage } from '../components/common/CdnImage'
 
 const brandPromises = ['100% Soy Wax', 'Cruelty Free', 'Vegan', 'Clean Fragrance', 'Sustainable Packaging', 'Made in India']
 
@@ -40,7 +41,7 @@ export const HomePage = () => {
           <div className="category-grid">
             {categories.map((category) => (
               <Link key={category._id} to={`/category/${category.slug}`} className="category-card">
-                {category.image ? <img src={category.image} alt="" loading="lazy" decoding="async" /> : <div className="image-placeholder" />}
+                {category.image ? <CdnImage src={category.image} width={640} /> : <div className="image-placeholder" />}
                 <div>
                   <h3>{category.name}</h3>
                   <p>{category.count} {category.count === 1 ? 'product' : 'products'}</p>

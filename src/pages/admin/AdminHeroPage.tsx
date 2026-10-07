@@ -8,6 +8,7 @@ import { ErrorState, Skeleton } from '../../components/common/Feedback'
 import { Field, FormError, SelectField, TextAreaField } from '../../components/common/Field'
 import { triggerToast } from '../../components/common/ToastContainer'
 import { imageTypes, slideStatus, validateHeroFile, validateSlideForm, videoTypes, type SlideFormState } from '../../utils/rules'
+import { CdnImage } from '../../components/common/CdnImage'
 
 
 const toLocalInput = (iso?: string | null) => {
@@ -127,7 +128,7 @@ const SlideMediaManager = ({ slide }: { slide: HeroSlide }) => {
         return (
           <div key={target} className="hero-media-slot">
             <label htmlFor={`${slide._id}-${target}`}>{label}</label>
-            {current ? (kind === 'image' ? <img src={current} alt={`${label} preview`} /> : <video src={current} muted controls preload="metadata" aria-label={`${label} preview`} />) : <div className="image-placeholder">None</div>}
+            {current ? (kind === 'image' ? <CdnImage src={current} width={240} alt={`${label} preview`} /> : <video src={current} muted controls preload="metadata" aria-label={`${label} preview`} />) : <div className="image-placeholder">None</div>}
             <input id={`${slide._id}-${target}`} type="file" accept={(kind === 'image' ? imageTypes : videoTypes).join(',')} disabled={Boolean(pending)} onChange={(event) => { void upload(kind, target, event.target.files?.[0]); event.target.value = '' }} />
             {pending === target && <small role="status">Uploading…</small>}
           </div>

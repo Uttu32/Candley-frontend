@@ -50,15 +50,27 @@ describe('HeroSlider', () => {
     expect(activeSlide()).toHaveTextContent('B')
   })
 
-  it('autoplays and can be paused', () => {
+  it('autoplays, with no separate play/pause button', () => {
     vi.useFakeTimers()
     renderSlider([makeSlide({ heading: 'A' }), makeSlide({ heading: 'B' })])
     act(() => { vi.advanceTimersByTime(AUTOPLAY_MS) })
     expect(activeSlide()).toHaveTextContent('B')
-    fireEvent.click(screen.getByRole('button', { name: 'Pause slideshow' }))
+    expect(screen.queryByRole('button', { name: /pause|play/i })).toBeNull()
+  })
+
+  it('keeps rotating while the mouse is over a slide, but holds while it is on the controls', () => {
+    vi.useFakeTimers()
+    renderSlider([makeSlide({ heading: 'A' }), makeSlide({ heading: 'B' }), makeSlide({ heading: 'C' })])
+    fireEvent.mouseEnter(screen.getByRole('region', { name: 'Featured collections' }))
+    act(() => { vi.advanceTimersByTime(AUTOPLAY_MS) })
+    expect(activeSlide()).toHaveTextContent('B')
+    const controls = screen.getByRole('button', { name: 'Next slide' }).parentElement!
+    fireEvent.mouseEnter(controls)
     act(() => { vi.advanceTimersByTime(AUTOPLAY_MS * 2) })
     expect(activeSlide()).toHaveTextContent('B')
-    expect(screen.getByRole('button', { name: 'Play slideshow' })).toHaveAttribute('aria-pressed', 'true')
+    fireEvent.mouseLeave(controls)
+    act(() => { vi.advanceTimersByTime(AUTOPLAY_MS) })
+    expect(activeSlide()).toHaveTextContent('C')
   })
 
   it('does not autoplay or play video when the user prefers reduced motion', () => {
@@ -69,7 +81,6 @@ describe('HeroSlider', () => {
     expect(activeSlide()).toHaveTextContent('A')
     expect(document.querySelector('video')).toBeNull()
     expect(activeSlide().querySelector('img')).toHaveAttribute('src', '/poster.jpg')
-    expect(screen.queryByRole('button', { name: /pause slideshow/i })).toBeNull()
   })
 
   it('renders muted inline video with poster, and the mobile image source', () => {

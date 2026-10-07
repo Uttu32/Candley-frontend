@@ -42,12 +42,12 @@ CandleyAroma is an artisanal home-fragrance brand. The interface should feel lik
 
 ## Typography
 
-- **Display:** Playfair Display, falling back to Georgia. Use for the brand wordmark, hero headings, section titles, and product names.
-- **Interface:** DM Sans, falling back to Segoe UI. Use for navigation, body copy, controls, prices, metadata, and form fields.
-- **Eyebrows:** DM Sans, 0.72rem, uppercase, 0.18em tracking, lavender-dark.
-- **Body:** DM Sans, 1rem, 1.5 line-height, charcoal slate.
-- **Hero heading:** Playfair Display, responsive 2.5rem-5rem, tight line-height.
-- **Section heading:** Playfair Display, responsive 1.8rem-3rem.
+- **Display:** Fraunces (variable, optical sizing), falling back to Georgia. Use for the brand wordmark, hero headings, section titles, and product names.
+- **Interface:** Plus Jakarta Sans, falling back to Segoe UI. Use for navigation, body copy, controls, prices, metadata, and form fields.
+- **Eyebrows:** Plus Jakarta Sans, 0.72rem, uppercase, 0.18em tracking, lavender-dark.
+- **Body:** Plus Jakarta Sans, 1rem, 1.5 line-height, charcoal slate.
+- **Hero heading:** Fraunces, responsive 2.5rem-5rem, tight line-height.
+- **Section heading:** Fraunces, responsive 1.8rem-3rem.
 
 ## Shape, Depth, and Spacing
 

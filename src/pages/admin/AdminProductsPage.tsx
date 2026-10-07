@@ -8,6 +8,7 @@ import { Pagination } from '../../components/common/Pagination'
 import { ErrorState, Skeleton } from '../../components/common/Feedback'
 import { triggerToast } from '../../components/common/ToastContainer'
 import { productStatuses } from '../../utils/rules'
+import { CdnImage } from '../../components/common/CdnImage'
 
 export const AdminProductsPage = () => {
   const queryClient = useQueryClient()
@@ -66,10 +67,10 @@ export const AdminProductsPage = () => {
               <tbody>
                 {products.data.items.map((product) => (
                   <tr key={product._id}>
-                    <td className="cell-product">
-                      {product.thumbnailImage ? <img src={product.thumbnailImage} alt="" loading="lazy" /> : <span className="image-placeholder" />}
+                    <td><div className="cell-product">
+                      {product.thumbnailImage ? <CdnImage src={product.thumbnailImage} width={44} /> : <span className="image-placeholder" />}
                       <span><strong>{product.name}</strong><small>{product.category}{product.variants.length ? ` · ${product.variants.length} variants` : ''}</small></span>
-                    </td>
+                    </div></td>
                     <td>{product.sku}</td>
                     <td>{formatInr(product.price)}</td>
                     <td className={product.stock === 0 ? 'text-danger' : ''}>{product.stock}</td>
@@ -79,10 +80,10 @@ export const AdminProductsPage = () => {
                         {productStatuses.map((value) => <option key={value} value={value}>{humanize(value)}</option>)}
                       </select>
                     </td>
-                    <td className="cell-actions">
+                    <td><div className="cell-actions">
                       <Link to={`/admin/products/${product._id}/edit`} className="text-button">Edit</Link>
                       <button type="button" className="text-button danger" onClick={() => { if (window.confirm(`Delete ${product.name}? Products with orders are archived instead.`)) remove.mutate(product) }}>Delete</button>
-                    </td>
+                    </div></td>
                   </tr>
                 ))}
               </tbody>

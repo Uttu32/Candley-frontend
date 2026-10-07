@@ -68,7 +68,7 @@ export const ShopPage = () => {
       Object.entries(changes).forEach(([key, value]) => (value ? next.set(key, value) : next.delete(key)))
       if (resetPage) next.delete('page')
       return next
-    })
+    }, { preventScrollReset: true }) // filters and search update in place; paging scrolls explicitly
   }
 
   // Debounce typing into the URL; the URL stays the source of truth.

@@ -15,7 +15,7 @@ export type AuthUser = {
   emailVerified: boolean
 }
 
-export type Session = { accessToken: string; user: AuthUser }
+export type Session = { accessToken: string; refreshToken?: string; user: AuthUser }
 
 export type Pagination = { page: number; limit: number; total: number; totalPages: number }
 export type Paginated<T> = { items: T[]; pagination: Pagination }
@@ -242,9 +242,22 @@ export type AdminDashboard = {
   outOfStockProducts: number
   lowStockProducts: number
   averageOrderValue: number
-  revenueSeries: Array<{ label: string; value: number }>
-  topProducts: Array<{ productId: string; name: string; units: number; revenue: number }>
+  /** Value of non-cancelled orders placed in the period, paid or not (e.g. COD awaiting collection). */
+  bookedSales: number
+  bookedOrders: number
+  bookedAverageOrderValue: number
+  lowStockThreshold: number
+  /** Same figures for the equally long window before this one; null for "all time". */
+  previous: { totalSales: number; totalOrders: number; bookedSales: number; bookedOrders: number; newCustomers: number; averageOrderValue: number; bookedAverageOrderValue: number; paidOrders: number } | null
+  seriesUnit: 'day' | 'month'
+  /** `value` is paid revenue, `booked` is all non-cancelled order value. Labels are YYYY-MM-DD or YYYY-MM (IST). */
+  revenueSeries: Array<{ label: string; value: number; booked: number; orders: number }>
+  topProducts: Array<{ productId: string; name: string; image?: string; units: number; revenue: number }>
   ordersByStatus: Array<{ status: OrderStatus; count: number }>
+  paymentMethods: Array<{ method: PaymentMethod; count: number; amount: number }>
+  needsAttention: { awaitingPayment: number; toProcess: number; toShip: number; codToCollect: number }
+  recentOrders: Array<{ _id: string; orderNumber: string; customerName: string; itemCount: number; total: number; status: OrderStatus; paymentStatus: PaymentStatus; paymentMethod: PaymentMethod; createdAt: string }>
+  lowStockItems: Array<{ _id: string; name: string; sku: string; stock: number; image: string }>
 }
 
 export type AdminCustomer = {

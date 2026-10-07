@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useRef, useState, type KeyboardEvent, type PointerEvent } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowRight, ChevronLeft, ChevronRight, Pause, Play } from 'lucide-react'
+import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react'
 import type { HeroSlide } from '../../types'
 import { mobileQuery, useMediaQuery, usePrefersReducedMotion } from '../../hooks/useMediaQuery'
+import { optimizedImage } from '../../utils/image'
 
 export const AUTOPLAY_MS = 6000
 const SWIPE_THRESHOLD = 50
@@ -37,7 +38,7 @@ const SlideMedia = ({ slide, eager, reducedMotion, isMobile, isActive }: { slide
         key={video}
         className="hero-media"
         src={video}
-        poster={poster || undefined}
+        poster={poster ? optimizedImage(poster, 1920) : undefined}
         muted
         loop
         playsInline
@@ -51,8 +52,8 @@ const SlideMedia = ({ slide, eager, reducedMotion, isMobile, isActive }: { slide
   if (!still) return <div className="hero-media hero-media-empty" aria-hidden="true" />
   return (
     <picture>
-      {!video && slide.mobileImage && <source media={mobileQuery} srcSet={slide.mobileImage} />}
-      <img className="hero-media" src={still} alt={alt} loading={eager ? 'eager' : 'lazy'} decoding="async" fetchPriority={eager ? 'high' : 'auto'} />
+      {!video && slide.mobileImage && <source media={mobileQuery} srcSet={optimizedImage(slide.mobileImage, 900)} />}
+      <img className="hero-media" src={optimizedImage(still, 1920)} alt={alt} loading={eager ? 'eager' : 'lazy'} decoding="async" fetchPriority={eager ? 'high' : 'auto'} />
     </picture>
   )
 }
@@ -63,13 +64,14 @@ export const HeroSlider = ({ slides }: { slides: HeroSlide[] }) => {
   const reducedMotion = usePrefersReducedMotion()
   const isMobile = useMediaQuery(mobileQuery)
   const [index, setIndex] = useState(0)
-  const [userPaused, setUserPaused] = useState(false)
+  // Pauses only while the pointer is on the controls or keyboard focus is inside the slider,
+  // so the full-width banner keeps rotating while someone simply moves the mouse across it.
   const [interacting, setInteracting] = useState(false)
   const pointerStart = useRef<number | null>(null)
 
   const current = count ? Math.min(index, count - 1) : 0
   const go = useCallback((next: number) => setIndex(((next % count) + count) % count), [count])
-  const playing = count > 1 && !reducedMotion && !userPaused && !interacting
+  const playing = count > 1 && !reducedMotion && !interacting
 
   useEffect(() => {
     if (!playing) return undefined
@@ -97,9 +99,7 @@ export const HeroSlider = ({ slides }: { slides: HeroSlide[] }) => {
       aria-roledescription="carousel"
       aria-label="Featured collections"
       onKeyDown={onKeyDown}
-      onMouseEnter={() => setInteracting(true)}
-      onMouseLeave={() => setInteracting(false)}
-      onFocus={() => setInteracting(true)}
+      onFocus={(event) => { if (event.target.matches(':focus-visible')) setInteracting(true) }}
       onBlur={(event) => { if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setInteracting(false) }}
       onPointerDown={onPointerDown}
       onPointerUp={onPointerUp}
@@ -137,8 +137,8 @@ export const HeroSlider = ({ slides }: { slides: HeroSlide[] }) => {
       </div>
 
       {count > 1 && (
-        <div className="hero-controls">
-          <button type="button" className="hero-control" onClick={() => go(current - 1)} aria-label="Previous slide"><ChevronLeft size={18} /></button>
+        <div className="hero-controls" onMouseEnter={() => setInteracting(true)} onMouseLeave={() => setInteracting(false)}>
+          <button type="button" className="hero-control" onClick={() => go(current - 1)} aria-label="Previous slide"><ChevronLeft size={18} strokeWidth={2.25} /></button>
           <div className="hero-dots" role="group" aria-label="Choose slide">
             {ordered.map((slide, slideIndex) => (
               <button
@@ -148,15 +148,17 @@ export const HeroSlider = ({ slides }: { slides: HeroSlide[] }) => {
                 aria-label={`Go to slide ${slideIndex + 1}: ${slide.heading}`}
                 aria-current={slideIndex === current ? 'true' : undefined}
                 onClick={() => go(slideIndex)}
-              />
+              >
+                <span className="hero-dot-bar" aria-hidden="true">
+                  {/* Fills over the autoplay interval, in step with the timer (both restart on resume). */}
+                  {slideIndex === current && count > 1 && !reducedMotion && (
+                    <span key={`${current}-${playing}`} className={`hero-dot-progress ${playing ? '' : 'is-paused'}`} style={{ animationDuration: `${AUTOPLAY_MS}ms` }} />
+                  )}
+                </span>
+              </button>
             ))}
           </div>
-          <button type="button" className="hero-control" onClick={() => go(current + 1)} aria-label="Next slide"><ChevronRight size={18} /></button>
-          {!reducedMotion && (
-            <button type="button" className="hero-control" onClick={() => setUserPaused((value) => !value)} aria-label={userPaused ? 'Play slideshow' : 'Pause slideshow'} aria-pressed={userPaused}>
-              {userPaused ? <Play size={16} /> : <Pause size={16} />}
-            </button>
-          )}
+          <button type="button" className="hero-control" onClick={() => go(current + 1)} aria-label="Next slide"><ChevronRight size={18} strokeWidth={2.25} /></button>
         </div>
       )}
     </section>

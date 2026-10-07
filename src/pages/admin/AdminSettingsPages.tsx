@@ -79,10 +79,10 @@ export const AdminCouponsPage = () => {
                   <td>{coupon.usedCount}{coupon.usageLimit ? ` / ${coupon.usageLimit}` : ''}</td>
                   <td>{coupon.startsAt ? formatDate(coupon.startsAt) : 'Now'} – {coupon.endsAt ? formatDate(coupon.endsAt) : 'No end'}</td>
                   <td><span className={`pill ${coupon.active ? 'pill-success' : ''}`}>{coupon.active ? 'Active' : 'Inactive'}</span></td>
-                  <td className="cell-actions">
+                  <td><div className="cell-actions">
                     <button type="button" className="text-button" onClick={() => toggle.mutate(coupon)}>{coupon.active ? 'Deactivate' : 'Activate'}</button>
                     <button type="button" className="text-button danger" onClick={() => { if (window.confirm(`Delete ${coupon.code}?`)) remove.mutate(coupon) }}>Delete</button>
-                  </td>
+                  </div></td>
                 </tr>
               ))}
             </tbody>

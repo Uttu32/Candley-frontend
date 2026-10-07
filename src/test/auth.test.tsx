@@ -5,7 +5,7 @@ import { makeUser, mockApi, MockError, renderApp, signIn, storefrontDefaults } f
 import { useAppStore } from '../store/useAppStore'
 
 const adminDefaults = {
-  'GET /admin/dashboard': { totalSales: 0, totalOrders: 0, paidOrders: 0, totalCustomers: 0, newCustomers: 0, pendingOrders: 0, totalProducts: 0, outOfStockProducts: 0, lowStockProducts: 0, averageOrderValue: 0, revenueSeries: [], topProducts: [], ordersByStatus: [] },
+  'GET /admin/dashboard': { totalSales: 0, totalOrders: 0, paidOrders: 0, totalCustomers: 0, newCustomers: 0, pendingOrders: 0, totalProducts: 0, outOfStockProducts: 0, lowStockProducts: 0, averageOrderValue: 0, bookedSales: 0, bookedOrders: 0, bookedAverageOrderValue: 0, lowStockThreshold: 5, previous: null, seriesUnit: 'day', revenueSeries: [], topProducts: [], ordersByStatus: [], paymentMethods: [], needsAttention: { awaitingPayment: 0, toProcess: 0, toShip: 0, codToCollect: 0 }, recentOrders: [], lowStockItems: [] },
 }
 
 beforeEach(() => signIn(null))

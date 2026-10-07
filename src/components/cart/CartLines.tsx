@@ -3,6 +3,7 @@ import { Minus, Plus, Trash2 } from 'lucide-react'
 import type { Cart } from '../../types'
 import { formatInr } from '../../utils/format'
 import { useCartActions } from '../../hooks/useCart'
+import { CdnImage } from '../common/CdnImage'
 
 /**
  * Renders server cart lines. Unit prices, line totals and availability are exactly what the API returned;
@@ -19,7 +20,7 @@ export const CartLines = ({ cart, compact = false, onNavigate }: { cart: Cart; c
         const label = `${product.name}${line.variant ? ` (${line.variant.label})` : ''}`
         return (
           <li key={line._id} className={`${compact ? 'cart-item-row cart-drawer-item' : 'cart-row'} ${line.available ? '' : 'is-unavailable'}`}>
-            {image ? <img src={image} alt="" className={compact ? 'mini-thumb' : ''} loading="lazy" decoding="async" /> : <div className="image-placeholder mini-thumb" />}
+            {image ? <CdnImage src={image} width={compact ? 64 : 120} className={compact ? 'mini-thumb' : ''} /> : <div className="image-placeholder mini-thumb" />}
             <div className="drawer-item-copy">
               <Link to={`/product/${product.slug}`} onClick={onNavigate}><strong>{product.name}</strong></Link>
               {line.variant && <span>{line.variant.label}</span>}

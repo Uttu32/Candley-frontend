@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { Boxes, FolderTree, Image, LayoutDashboard, LogOut, Menu, Package, Settings, ShoppingCart, TicketPercent, Users, X } from 'lucide-react'
 import { useSession } from '../hooks/useSession'
@@ -20,12 +20,20 @@ export const AdminLayout = () => {
   const navigate = useNavigate()
   const { user, logout } = useSession()
   const [navOpen, setNavOpen] = useState(false)
+  // On small screens the sidebar is a drawer: Escape closes it.
+  useEffect(() => {
+    if (!navOpen) return undefined
+    const onKey = (event: KeyboardEvent) => { if (event.key === 'Escape') setNavOpen(false) }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [navOpen])
   return (
     <div className="admin-shell">
       <PageMeta title="Admin" noIndex />
       <a href="#admin-content" className="skip-link">Skip to content</a>
       <aside className={`admin-sidebar ${navOpen ? 'open' : ''}`}>
         <div className="admin-brand">Candley Admin</div>
+        <button type="button" className="admin-nav-close" onClick={() => setNavOpen(false)} aria-label="Close navigation"><X size={18} /></button>
         <nav aria-label="Admin" id="admin-nav">
           {adminLinks.map(({ to, label, icon: Icon }) => (
             <NavLink key={to} to={to} className="admin-nav-item" onClick={() => setNavOpen(false)}>
@@ -35,15 +43,16 @@ export const AdminLayout = () => {
           ))}
         </nav>
       </aside>
+      {navOpen && <button type="button" className="admin-nav-backdrop" onClick={() => setNavOpen(false)} aria-label="Close navigation" tabIndex={-1} />}
       <div className="admin-main">
         <header className="admin-header">
-          <button type="button" className="icon-button admin-nav-toggle" onClick={() => setNavOpen((open) => !open)} aria-expanded={navOpen} aria-controls="admin-nav" aria-label={navOpen ? 'Close navigation' : 'Open navigation'}>
-            {navOpen ? <X size={18} /> : <Menu size={18} />}
+          <button type="button" className="icon-button admin-nav-toggle" onClick={() => setNavOpen((open) => !open)} aria-expanded={navOpen} aria-controls="admin-nav" aria-label="Open navigation">
+            <Menu size={18} />
           </button>
           <NavLink to="/" className="text-button">View store</NavLink>
           <div className="admin-actions">
-            <span className="admin-user">{user?.name} <small>({user?.role.replace('_', ' ').toLowerCase()})</small></span>
-            <button type="button" className="secondary-button small" onClick={() => void logout().finally(() => navigate('/login', { replace: true }))}>
+            <span className="admin-user">{user?.name} <small>{user?.role.replace('_', ' ').toLowerCase()}</small></span>
+            <button type="button" className="secondary-button small admin-signout" onClick={() => void logout().finally(() => navigate('/login', { replace: true }))}>
               <LogOut size={14} aria-hidden="true" /> Sign out
             </button>
           </div>

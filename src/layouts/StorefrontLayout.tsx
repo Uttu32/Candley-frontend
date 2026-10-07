@@ -8,6 +8,7 @@ import { useCart } from '../hooks/useCart'
 import { useWishlist } from '../hooks/useWishlist'
 import { CartLines } from '../components/cart/CartLines'
 import { formatInr } from '../utils/format'
+import { CdnImage } from '../components/common/CdnImage'
 
 const SearchOverlay = ({ onClose }: { onClose: () => void }) => {
   const navigate = useNavigate()
@@ -31,7 +32,7 @@ const SearchOverlay = ({ onClose }: { onClose: () => void }) => {
           {results.isError && <p className="search-empty">Search is unavailable right now.</p>}
           {results.data?.items.map((product) => (
             <Link key={product._id} to={`/product/${product.slug}`} className="search-result-item" onClick={onClose}>
-              {product.thumbnailImage ? <img src={product.thumbnailImage} alt="" loading="lazy" /> : <span className="image-placeholder" />}
+              {product.thumbnailImage ? <CdnImage src={product.thumbnailImage} width={64} /> : <span className="image-placeholder" />}
               <span><strong>{product.name}</strong><small>{product.fragrance} · {formatInr(product.price)}</small></span>
             </Link>
           ))}

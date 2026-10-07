@@ -1,9 +1,10 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 @import "tailwindcss";
 @import "./styles/components.css";
+@import "./styles/dashboard.css";
 
 :root {
-  font-family: 'DM Sans', 'Segoe UI', sans-serif;
+  font-family: 'Plus Jakarta Sans', 'Segoe UI', sans-serif;
   line-height: 1.5;
   font-weight: 400;
   color: #4f4f4f;
@@ -42,8 +43,8 @@
   --radius-sm: 12px;
   --container: 1200px;
   --heroContainer: 400px;
-  --display-font: 'Playfair Display', Georgia, serif;
-  --body-font: 'DM Sans', 'Segoe UI', sans-serif;
+  --display-font: 'Fraunces', Georgia, serif;
+  --body-font: 'Plus Jakarta Sans', 'Segoe UI', sans-serif;
 }
 
 * {

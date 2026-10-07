@@ -7,6 +7,7 @@ import { useToggleWishlist, useWishlist } from '../../hooks/useWishlist'
 import { useRequireAuth } from '../../hooks/useRequireAuth'
 import { triggerToast } from '../common/ToastContainer'
 import { displayPrice, isPurchasable } from '../../utils/rules'
+import { CdnImage } from '../common/CdnImage'
 
 export const WishlistButton = ({ product, className = '' }: { product: Product; className?: string }) => {
   const wishlist = useWishlist()
@@ -45,7 +46,7 @@ export const ProductCard = ({ product }: { product: Product }) => {
       <div className="product-media">
         <Link to={href} tabIndex={-1} aria-hidden="true">
           {product.thumbnailImage || product.images[0]
-            ? <img src={product.thumbnailImage || product.images[0]} alt="" loading="lazy" decoding="async" />
+            ? <CdnImage src={product.thumbnailImage || product.images[0]!} width={420} />
             : <div className="image-placeholder" />}
         </Link>
         {!purchasable ? <span className="product-badge muted">Sold out</span> : product.badge && <span className="product-badge">{product.badge}</span>}

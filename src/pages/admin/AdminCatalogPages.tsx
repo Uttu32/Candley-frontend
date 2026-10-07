@@ -6,7 +6,7 @@ import type { Category, Product } from '../../types'
 import { isSafeLink, slugify } from '../../utils/rules'
 import { Pagination } from '../../components/common/Pagination'
 import { ErrorState, Skeleton } from '../../components/common/Feedback'
-import { Field, FormError } from '../../components/common/Field'
+import { Field, FormError, NumberField } from '../../components/common/Field'
 import { triggerToast } from '../../components/common/ToastContainer'
 
 const StockEditor = ({ product, variantId, label, stock }: { product: Product; variantId?: string; label: string; stock: number }) => {
@@ -104,7 +104,7 @@ const CategoryForm = ({ category, onDone }: { category?: Category; onDone: () =>
         <Field label="Name" required value={form.name} onChange={(event) => setForm((current) => ({ ...current, name: event.target.value, slug: category ? current.slug : slugify(event.target.value) }))} hint="Must match the category name used on products" />
         <Field label="Slug" required value={form.slug} onChange={(event) => setForm((current) => ({ ...current, slug: event.target.value }))} />
         <Field label="Image URL" value={form.image} onChange={(event) => setForm((current) => ({ ...current, image: event.target.value }))} />
-        <Field label="Sort order" type="number" min={0} value={form.sortOrder} onChange={(event) => setForm((current) => ({ ...current, sortOrder: Number(event.target.value) }))} />
+        <NumberField label="Sort order" min={0} step={1} value={form.sortOrder} hint="Lower numbers appear first" onValueChange={(value) => setForm((current) => ({ ...current, sortOrder: value }))} />
         <Field label="Description" value={form.description} maxLength={500} onChange={(event) => setForm((current) => ({ ...current, description: event.target.value }))} className="span-2" />
         <label className="checkbox-row"><input type="checkbox" checked={form.active} onChange={(event) => setForm((current) => ({ ...current, active: event.target.checked }))} /> Visible in the store</label>
       </div>

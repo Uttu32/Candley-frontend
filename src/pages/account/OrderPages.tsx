@@ -7,6 +7,7 @@ import { ErrorState, Skeleton } from '../../components/common/Feedback'
 import { triggerToast } from '../../components/common/ToastContainer'
 import { useRazorpayPayment } from '../../hooks/useRazorpayPayment'
 import { customerCanCancel } from '../../utils/rules'
+import { CdnImage } from '../../components/common/CdnImage'
 
 const statusTone: Record<OrderStatus, string> = {
   PENDING_PAYMENT: 'pill-warning', CONFIRMED: 'pill-info', PROCESSING: 'pill-info', SHIPPED: 'pill-info', DELIVERED: 'pill-success', CANCELLED: 'pill-danger',
@@ -101,7 +102,7 @@ export const OrderDetailPage = () => {
       <ul className="order-items">
         {order.items.map((item) => (
           <li key={`${item.productId}-${item.variantId ?? ''}`} className="cart-row">
-            {item.thumbnailImage || item.image ? <img src={item.thumbnailImage || item.image} alt="" loading="lazy" /> : <div className="image-placeholder" />}
+            {item.thumbnailImage || item.image ? <CdnImage src={(item.thumbnailImage || item.image)!} width={96} /> : <div className="image-placeholder" />}
             <div>
               {item.productSlug ? <Link to={`/product/${item.productSlug}`}><strong>{item.productName}</strong></Link> : <strong>{item.productName}</strong>}
               <p className="account-muted">{item.variantLabel ? `${item.variantLabel} · ` : ''}SKU {item.sku}</p>

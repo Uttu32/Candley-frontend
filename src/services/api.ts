@@ -28,13 +28,37 @@ export class ApiError extends Error {
 export const errorMessage = (error: unknown, fallback = 'Something went wrong. Please try again.') =>
   error instanceof Error && error.message ? error.message : fallback
 
-// The access token lives in memory only; the httpOnly refresh cookie restores it after a reload.
+// The access token lives in memory only. After a reload the session is restored from the httpOnly refresh
+// cookie, or — when the browser blocks that cookie because the API is on another site — from the refresh
+// token kept in localStorage.
 let accessToken: string | null = null
 let sessionExpiredHandler: (() => void) | undefined
 let refreshInFlight: Promise<Session | null> | undefined
 
+const refreshStorageKey = 'candley.refreshToken'
+const storedRefreshToken = () => {
+  try { return localStorage.getItem(refreshStorageKey) } catch { return null }
+}
+const storeRefreshToken = (token: string | null | undefined) => {
+  try {
+    if (token) localStorage.setItem(refreshStorageKey, token)
+    else localStorage.removeItem(refreshStorageKey)
+  } catch {
+    // Storage can be unavailable (private mode); the cookie still works where allowed.
+  }
+}
+/** Keeps a freshly issued session: access token in memory, refresh token in localStorage. */
+const adoptSession = (session: Session) => {
+  accessToken = session.accessToken
+  if (session.refreshToken) storeRefreshToken(session.refreshToken)
+  return session
+}
+
 export const getAccessToken = () => accessToken
-export const setAccessToken = (token: string | null) => { accessToken = token }
+export const setAccessToken = (token: string | null) => {
+  accessToken = token
+  if (token === null) storeRefreshToken(null)
+}
 export const onSessionExpired = (handler: () => void) => { sessionExpiredHandler = handler }
 
 type Query = Record<string, string | number | boolean | undefined | null>
@@ -72,11 +96,15 @@ const send = async (path: string, options: RequestOptions) => {
 export const refreshSession = () => {
   refreshInFlight ??= (async () => {
     try {
-      const response = await send('/auth/refresh', { method: 'POST', retryOnUnauthorized: false })
-      if (!response.ok) return null
+      const stored = storedRefreshToken()
+      const response = await send('/auth/refresh', { method: 'POST', retryOnUnauthorized: false, headers: stored ? { 'X-Refresh-Token': stored } : undefined })
+      if (!response.ok) {
+        // 401 means the token is invalid or revoked; other failures (network, 5xx, 429) may be temporary.
+        if (response.status === 401) storeRefreshToken(null)
+        return null
+      }
       const payload = (await response.json()) as Envelope<Session>
-      accessToken = payload.data.accessToken
-      return payload.data
+      return adoptSession(payload.data)
     } catch {
       return null
     } finally {
@@ -92,7 +120,7 @@ export const request = async <T>(path: string, options: RequestOptions = {}): Pr
     const session = await refreshSession()
     if (session) response = await send(path, options)
     else {
-      accessToken = null
+      setAccessToken(null)
       sessionExpiredHandler?.()
     }
   }
@@ -110,20 +138,21 @@ export type ProductQuery = { q?: string; category?: string; collection?: string;
 
 export const authApi = {
   login: async (input: { email: string; password: string }) => {
-    const session = await request<Session>('/auth/login', json('POST', input, { retryOnUnauthorized: false }))
-    accessToken = session.accessToken
-    return session
+    return adoptSession(await request<Session>('/auth/login', json('POST', input, { retryOnUnauthorized: false })))
   },
   register: (input: { name: string; email: string; password: string }) => request<AuthUser>('/auth/register', json('POST', input)),
   logout: async () => {
-    try { await request<null>('/auth/logout', json('POST', undefined, { retryOnUnauthorized: false })) } finally { accessToken = null }
+    const stored = storedRefreshToken()
+    try {
+      await request<null>('/auth/logout', json('POST', undefined, { retryOnUnauthorized: false, headers: stored ? { 'X-Refresh-Token': stored } : undefined }))
+    } finally {
+      setAccessToken(null)
+    }
   },
   me: () => request<AuthUser>('/auth/me'),
   updateProfile: (input: { name: string; email: string; phone: string; dateOfBirth: string }) => request<AuthUser>('/auth/me', json('PATCH', input)),
   changePassword: async (input: { currentPassword: string; newPassword: string }) => {
-    const session = await request<Session>('/auth/change-password', json('POST', input))
-    accessToken = session.accessToken
-    return session
+    return adoptSession(await request<Session>('/auth/change-password', json('POST', input)))
   },
   forgotPassword: (email: string) => request<null>('/auth/forgot-password', json('POST', { email })),
   resetPassword: (input: { token: string; password: string }) => request<null>('/auth/reset-password', json('POST', input)),
