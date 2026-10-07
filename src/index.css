@@ -1,9 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap');
 @import "tailwindcss";
-@import 'swiper/css';
-@import 'swiper/css/pagination';
-@import 'swiper/css/navigation';
-@import 'swiper/css/effect-fade';
+@import "./styles/components.css";
 
 :root {
   font-family: 'DM Sans', 'Segoe UI', sans-serif;

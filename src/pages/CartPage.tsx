@@ -1,117 +1,68 @@
 import { Link } from 'react-router-dom'
-import { useQuery } from '@tanstack/react-query'
+import { useCart, useCartUpdating } from '../hooks/useCart'
 import { useAppStore } from '../store/useAppStore'
-import { api } from '../services/api'
+import { CartLines } from '../components/cart/CartLines'
+import { ErrorState, Skeleton } from '../components/common/Feedback'
+import { PageMeta } from '../components/common/PageMeta'
+import { formatInr } from '../utils/format'
 
 export const CartPage = () => {
-  const { cartItems, removeFromCart, updateQuantity } = useAppStore()
+  const status = useAppStore((state) => state.sessionStatus)
+  const cartQuery = useCart()
+  const isUpdating = useCartUpdating()
 
-  const productsQuery = useQuery({
-    queryKey: ['products', 'cart'],
-    queryFn: () => api.products(new URLSearchParams({ limit: '100' })),
-    retry: false,
-  })
+  if (status === 'anonymous') {
+    return (
+      <div className="container section-spacing">
+        <PageMeta title="Your cart" noIndex />
+        <div className="empty-state">
+          <h1>Your cart</h1>
+          <p>Sign in to see your saved cart on any device.</p>
+          <Link to="/login" state={{ from: '/cart' }} className="primary-button">Sign in</Link>
+          <Link to="/register" className="text-button">Create an account</Link>
+        </div>
+      </div>
+    )
+  }
 
-  const products = productsQuery.data?.items ?? []
-
-  const cartProducts = cartItems
-    .map((item) => {
-      const product = products.find((entry) => entry._id === item.productId)
-
-      if (!product) return null
-
-      return { ...item, product }
-    })
-    .filter((item) => item !== null)
-
+  const cart = cartQuery.data
   return (
     <div className="container section-spacing cart-page">
+      <PageMeta title="Your cart" noIndex />
       <div className="cart-layout">
         <div className="cart-items">
           <h1>Your cart</h1>
-
-          {cartItems.length === 0 ? (
+          {cartQuery.isPending || status === 'unknown' ? (
+            <Skeleton className="skeleton-block" label="Loading your cart" />
+          ) : cartQuery.isError ? (
+            <ErrorState error={cartQuery.error} title="Your cart could not be loaded" onRetry={() => void cartQuery.refetch()} />
+          ) : cart!.items.length === 0 ? (
             <div className="empty-state">
-              <h3>Your candle shelf is waiting.</h3>
-              <Link to="/shop" className="primary-button">
-                Explore Candles
-              </Link>
+              <h2>Your candle shelf is waiting.</h2>
+              <Link to="/shop" className="primary-button">Explore candles</Link>
             </div>
           ) : (
-            cartProducts.map(({ product, quantity, variantId }) => (
-              <div
-                key={`${product._id}-${variantId ?? 'default'}`}
-                className="cart-row"
-              >
-                <img
-                  src={product.thumbnailImage}
-                  alt={product.name}
-                />
-
-                <div>
-                  <h3>{product.name}</h3>
-                  <p>{product.fragrance}</p>
-                </div>
-
-                <div className="quantity-control">
-                  <button
-                    type="button"
-                    onClick={() =>
-                      updateQuantity(product._id, variantId, quantity - 1)
-                    }
-                  >
-                    −
-                  </button>
-
-                  <span>{quantity}</span>
-
-                  <button
-                    type="button"
-                    onClick={() =>
-                      updateQuantity(product._id, variantId, quantity + 1)
-                    }
-                  >
-                    +
-                  </button>
-                </div>
-
-                <strong>₹{product.price * quantity}</strong>
-
-                <button
-                  type="button"
-                  className="text-button"
-                  onClick={() => removeFromCart(product._id, variantId)}
-                >
-                  Remove
-                </button>
-              </div>
-            ))
+            <>
+              {cart!.hasIssues && (
+                <p className="form-error" role="alert">Some items have changed or are unavailable. Update or remove them before checkout.</p>
+              )}
+              <CartLines cart={cart!} />
+            </>
           )}
         </div>
 
-        <aside className="summary-panel">
-          <h3>Order summary</h3>
-
-          <div className="summary-row">
-            <span>Subtotal</span>
-            <strong>
-              ₹
-              {cartProducts.reduce(
-                (sum, item) => sum + item.product.price * item.quantity,
-                0
-              )}
-            </strong>
-          </div>
-
-          <div className="summary-row">
-            <span>Shipping</span>
-            <strong>Free</strong>
-          </div>
-
-          <Link to="/checkout" className="primary-button full-width">
-            Proceed to checkout
-          </Link>
-        </aside>
+        {cart && cart.items.length > 0 && (
+          <aside className="summary-panel" aria-label="Order summary">
+            <h2>Order summary</h2>
+            <div className="summary-row"><span>Subtotal ({cart.itemCount} {cart.itemCount === 1 ? 'item' : 'items'})</span><strong aria-live="polite">{isUpdating ? 'Updating…' : formatInr(cart.subtotal)}</strong></div>
+            <p className="account-muted">Shipping and any discounts are calculated at checkout.</p>
+            {cart.hasIssues ? (
+              <button type="button" className="primary-button full-width" disabled>Resolve cart issues to continue</button>
+            ) : (
+              <Link to="/checkout" className="primary-button full-width" aria-disabled={isUpdating}>Proceed to checkout</Link>
+            )}
+          </aside>
+        )}
       </div>
     </div>
   )

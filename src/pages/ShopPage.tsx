@@ -1,171 +1,156 @@
-import { useMemo } from 'react'
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
-import { useAppStore } from '../store/useAppStore'
-import { triggerToast } from '../components/common/ToastContainer'
-import { useQuery } from '@tanstack/react-query'
-import { api } from '../services/api'
+import { useEffect, useState } from 'react'
+import { Link, useLocation, useParams, useSearchParams } from 'react-router-dom'
+import { keepPreviousData, useQuery } from '@tanstack/react-query'
+import { catalogApi, type ProductQuery } from '../services/api'
+import { ProductCard } from '../components/product/ProductCard'
+import { Pagination } from '../components/common/Pagination'
+import { ErrorState, ProductGridSkeleton } from '../components/common/Feedback'
+import { PageMeta } from '../components/common/PageMeta'
+import { titleFromSlug } from '../utils/format'
+
+const sortOptions = [
+  { value: 'featured', label: 'Featured' },
+  { value: 'newest', label: 'Newest' },
+  { value: 'price_low_high', label: 'Price: low to high' },
+  { value: 'price_high_low', label: 'Price: high to low' },
+  { value: 'rating', label: 'Top rated' },
+] as const
+
+const priceRanges = [
+  { value: '', label: 'Any price' },
+  { value: '0-999', label: 'Under ₹1,000' },
+  { value: '1000-1999', label: '₹1,000 – ₹1,999' },
+  { value: '2000-', label: '₹2,000 and above' },
+]
+
+const PAGE_SIZE = 12
+const positiveInt = (value: string | null, fallback: number) => {
+  const parsed = Number(value)
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : fallback
+}
+
+/** Reads the product query from the route and URL so every filter is shareable and survives reloads. */
+const useShopQuery = () => {
+  const params = useParams()
+  const location = useLocation()
+  const [searchParams] = useSearchParams()
+  // Legacy department routes (/candles, /gift-sets, …) map to the category of the same slug.
+  const pathCategory = ['/candles', '/diffusers', '/room-sprays', '/gift-sets'].includes(location.pathname) ? location.pathname.slice(1) : undefined
+  const isCollection = location.pathname.startsWith('/collection/')
+  const category = (isCollection ? undefined : params.slug) ?? pathCategory ?? searchParams.get('category') ?? undefined
+  const collection = (isCollection ? params.slug : undefined) ?? searchParams.get('collection') ?? undefined
+  const [minPrice, maxPrice] = (searchParams.get('price') ?? '').split('-').map((value) => (value ? Number(value) : undefined))
+  const sort = sortOptions.some((option) => option.value === searchParams.get('sort')) ? searchParams.get('sort')! : 'featured'
+  const query: ProductQuery = {
+    q: searchParams.get('q')?.trim() || undefined,
+    category,
+    collection,
+    minPrice: Number.isFinite(minPrice) ? minPrice : undefined,
+    maxPrice: Number.isFinite(maxPrice) ? maxPrice : undefined,
+    inStock: searchParams.get('inStock') === 'true' || undefined,
+    sort,
+    page: positiveInt(searchParams.get('page'), 1),
+    limit: PAGE_SIZE,
+  }
+  return { query, routeCategory: params.slug && !isCollection ? params.slug : pathCategory, routeCollection: isCollection ? params.slug : undefined }
+}
 
 export const ShopPage = () => {
-  const { slug } = useParams()
   const [searchParams, setSearchParams] = useSearchParams()
-  const { addToCart, toggleWishlist, wishlist } = useAppStore()
-  const navigate = useNavigate()
+  const { query, routeCategory, routeCollection } = useShopQuery()
+  const [searchText, setSearchText] = useState(query.q ?? '')
+  const categoriesQuery = useQuery({ queryKey: ['categories'], queryFn: catalogApi.categories })
+  const productsQuery = useQuery({ queryKey: ['products', 'list', query], queryFn: ({ signal }) => catalogApi.products(query, signal), placeholderData: keepPreviousData })
 
-  const query = (searchParams.get('q') ?? '').trim().toLowerCase()
-  const maxPrice = Number(searchParams.get('maxPrice') ?? '2500')
-  const sort = searchParams.get('sort') ?? 'featured'
-  const productQuery = useQuery({
-    queryKey: ['products', query, slug, maxPrice, sort],
-    queryFn: () => api.products(new URLSearchParams({
-      ...(query ? { q: query } : {}),
-      ...(slug ? { category: slug } : {}),
-      maxPrice: String(maxPrice),
-      sort: sort === 'price_low_high' ? 'price_low_high' : sort === 'price_high_low' ? 'price_high_low' : sort === 'rating' ? 'rating' : 'featured',
-      limit: '100',
-    })),
-    retry: false,
-  })
+  const updateParams = (changes: Record<string, string | undefined>, resetPage = true) => {
+    setSearchParams((current) => {
+      const next = new URLSearchParams(current)
+      Object.entries(changes).forEach(([key, value]) => (value ? next.set(key, value) : next.delete(key)))
+      if (resetPage) next.delete('page')
+      return next
+    })
+  }
 
-  const visibleProducts = useMemo(() => {
-    if (productQuery.data) return productQuery.data.items
-    return []
-  }, [maxPrice, productQuery.data, query, searchParams, slug, sort])
+  // Debounce typing into the URL; the URL stays the source of truth.
+  useEffect(() => {
+    const handle = window.setTimeout(() => {
+      if ((searchParams.get('q') ?? '') !== searchText.trim()) updateParams({ q: searchText.trim() || undefined })
+    }, 350)
+    return () => window.clearTimeout(handle)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchText])
 
-  const pageTitle = slug ? slug.replace(/-/g, ' ') : query ? `Search: ${query}` : 'Shop all'
+  const categoryName = categoriesQuery.data?.find((category) => category.slug === (routeCategory ?? query.category))?.name
+  const title = routeCollection ? titleFromSlug(routeCollection) : routeCategory ? categoryName ?? titleFromSlug(routeCategory) : query.q ? `Results for “${query.q}”` : 'Shop all'
+  const data = productsQuery.data
+  const priceValue = searchParams.get('price') ?? ''
 
   return (
     <div className="container section-spacing">
+      <PageMeta
+        title={title}
+        description={routeCategory ? `Shop ${title.toLowerCase()} from Candley Aroma: hand-poured, clean-burning home fragrance.` : 'Browse hand-poured soy candles and home fragrance from Candley Aroma.'}
+        canonicalPath={routeCategory ? `/category/${routeCategory}` : routeCollection ? `/collection/${routeCollection}` : '/shop'}
+        noIndex={Boolean(query.q)}
+      />
       <div className="shop-header">
-        <h1>{pageTitle}</h1>
-        <p>{visibleProducts.length} curated products</p>
+        <h1>{title}</h1>
+        <p aria-live="polite">{data ? `${data.pagination.total} ${data.pagination.total === 1 ? 'product' : 'products'}` : ' '}</p>
       </div>
       <div className="shop-layout">
-        <aside className="filter-panel">
-          <h3>Filters</h3>
+        <aside className="filter-panel" aria-label="Filters">
+          <h2 className="filter-title">Filters</h2>
+          {!routeCategory && !routeCollection && (categoriesQuery.data?.length ?? 0) > 0 && (
+            <div className="filter-group">
+              <label htmlFor="category-filter">Category</label>
+              <select id="category-filter" value={query.category ?? ''} onChange={(event) => updateParams({ category: event.target.value || undefined })}>
+                <option value="">All categories</option>
+                {categoriesQuery.data!.map((category) => <option key={category._id} value={category.slug}>{category.name}</option>)}
+              </select>
+            </div>
+          )}
+          {(routeCategory || routeCollection) && <Link to="/shop" className="text-button">← All products</Link>}
           <div className="filter-group">
-            <label htmlFor="max-price">Max price</label>
-            <input
-              id="max-price"
-              type="range"
-              min={500}
-              max={2500}
-              step={100}
-              value={maxPrice}
-              onChange={(event) => {
-                const next = event.target.value
-                setSearchParams((params) => {
-                  params.set('maxPrice', next)
-                  return params
-                })
-              }}
-            />
-            <strong>Up to ₹{maxPrice}</strong>
-          </div>
-          <div className="filter-group">
-            <label htmlFor="sort-select">Sort</label>
-            <select
-              id="sort-select"
-              value={sort}
-              onChange={(event) => {
-                setSearchParams((params) => {
-                  params.set('sort', event.target.value)
-                  return params
-                })
-              }}
-            >
-              <option value="featured">Featured</option>
-              <option value="price_low_high">Price: low to high</option>
-              <option value="price_high_low">Price: high to low</option>
-              <option value="rating">Top rated</option>
+            <label htmlFor="price-filter">Price</label>
+            <select id="price-filter" value={priceValue} onChange={(event) => updateParams({ price: event.target.value || undefined })}>
+              {priceRanges.map((range) => <option key={range.value} value={range.value}>{range.label}</option>)}
             </select>
           </div>
+          <div className="filter-group">
+            <label htmlFor="sort-select">Sort by</label>
+            <select id="sort-select" value={query.sort} onChange={(event) => updateParams({ sort: event.target.value === 'featured' ? undefined : event.target.value })}>
+              {sortOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+            </select>
+          </div>
+          <label className="checkbox-row">
+            <input type="checkbox" checked={Boolean(query.inStock)} onChange={(event) => updateParams({ inStock: event.target.checked ? 'true' : undefined })} />
+            In stock only
+          </label>
         </aside>
 
         <div className="shop-product-area">
           <div className="toolbar-row">
-            <input
-              aria-label="Search products"
-              value={query}
-              onChange={(event) => {
-                setSearchParams((params) => {
-                  if (event.target.value) {
-                    params.set('q', event.target.value)
-                  } else {
-                    params.delete('q')
-                  }
-                  return params
-                })
-              }}
-              placeholder="Search candles, notes, collections"
-            />
+            <label htmlFor="shop-search" className="sr-only">Search products</label>
+            <input id="shop-search" type="search" value={searchText} onChange={(event) => setSearchText(event.target.value)} placeholder="Search candles, notes, collections" />
           </div>
 
-          {visibleProducts.length === 0 ? (
-            <div className="empty-state">No matches found. Try vanilla, floral, gifting or candle.</div>
-          ) : (
-            <div className="product-grid wide">
-              {visibleProducts.map((product) => {
-                const isLiked = wishlist.includes(product._id)
-                return (
-                  <article
-                    key={product._id}
-                    className="product-card"
-                    role="link"
-                    tabIndex={0}
-                    onClick={() => navigate(`/product/${product.slug}`)}
-                    onKeyDown={(event) => {
-                      if (event.key === 'Enter' || event.key === ' ') {
-                        event.preventDefault()
-                        navigate(`/product/${product.slug}`)
-                      }
-                    }}
-                  >
-                    <div className="product-media">
-                      <img src={product?.thumbnailImage} alt={product.name} />
-                      {product.badge && <span className="product-badge">{product.badge}</span>}
-                      <button
-                        type="button"
-                        className={`wishlist-button ${isLiked ? 'active' : ''}`}
-                        aria-label={isLiked ? `Remove ${product.name} from wishlist` : `Add ${product.name} to wishlist`}
-                        aria-pressed={isLiked}
-                        onClick={(event) => {
-                          event.stopPropagation()
-                          toggleWishlist(product._id)
-                          triggerToast(isLiked ? 'Removed from wishlist' : 'Added to wishlist')
-                        }}
-                      >
-                        <span aria-hidden="true">♥</span>
-                        <span className="wishlist-state">{isLiked ? 'Saved' : 'Save'}</span>
-                      </button>
-                    </div>
-                    <div className="product-body">
-                      <div className="product-meta px-2">
-                        <span>{product.collection}</span>
-                        <span>{product.fragrance}</span>
-                      </div>
-                      <h3 className='px-2'>{product.name}</h3>
-                      <div className="price-row px-2">
-                        <strong>₹{product.price}</strong>
-                        <span>₹{product.mrp}</span>
-                      </div>
-                      <div className="card-actions">
-                        <button
-                          type="button"
-                          className="primary-button small"
-                          onClick={(event) => {
-                            event.stopPropagation()
-                            addToCart(product._id, 1, product.variants?.[0]?._id)
-                            triggerToast('Added to cart')
-                          }}
-                        >
-                          Add to cart
-                        </button>
-                      </div>
-                    </div>
-                  </article>
-                )
-              })}
+          {productsQuery.isPending ? (
+            <ProductGridSkeleton />
+          ) : productsQuery.isError ? (
+            <ErrorState error={productsQuery.error} title="Products could not be loaded" onRetry={() => void productsQuery.refetch()} />
+          ) : data!.items.length === 0 ? (
+            <div className="empty-state">
+              <h2>No matching products</h2>
+              <p>Try a different search or clear the filters.</p>
+              <Link to="/shop" className="secondary-button">Clear filters</Link>
             </div>
+          ) : (
+            <>
+              <div className={`product-grid wide ${productsQuery.isPlaceholderData ? 'is-refreshing' : ''}`} aria-busy={productsQuery.isFetching}>
+                {data!.items.map((product) => <ProductCard key={product._id} product={product} />)}
+              </div>
+              <Pagination pagination={data!.pagination} onPageChange={(page) => { updateParams({ page: page > 1 ? String(page) : undefined }, false); window.scrollTo({ top: 0 }) }} label="Product pages" />
+            </>
           )}
         </div>
       </div>

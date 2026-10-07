@@ -1,75 +1,32 @@
-# React + TypeScript + Vite
+# Candley Aroma Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Vite + React 19 + TypeScript storefront and admin UI for the Candley Aroma API (contract: `../Backend/docs/api-reference.md`).
 
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
+## Setup
+```bash
+npm install
+npm run dev          # http://localhost:5173
 ```
 
-You can also install [eslint-plugin-react-x](https://npmx.dev/package/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://npmx.dev/package/eslint-plugin-react-dom) for React-specific lint rules:
+### Environment variables (names only)
+- `VITE_API_BASE_URL`: API origin, e.g. `http://localhost:5000`. Leave empty to use same-origin requests through the dev proxy.
+- `DEV_API_PROXY_TARGET`: dev proxy target when `VITE_API_BASE_URL` is empty (defaults to `http://localhost:5000`; never production).
+- `VITE_APP_URL`: public site URL, used for canonical links.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+No secrets belong here. The Razorpay key ID is supplied by the API per payment. `VITE_RAZORPAY_KEY_ID`, `VITE_CLOUDINARY_CLOUD_NAME` and `VITE_ENABLE_ANALYTICS` are not used.
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## Scripts
+| Script | Purpose |
+|---|---|
+| `npm run build` | Typecheck and production build |
+| `npm run lint` / `npm run typecheck` | ESLint / TypeScript |
+| `npm test` | Vitest + Testing Library (jsdom, mocked API) |
+| `npm run test:e2e` | Playwright against the real backend (`../Backend/tests/e2e-server.ts` starts it on an in-memory MongoDB). First run: `npx playwright install chromium` |
 
-```
+## Architecture
+- `src/services/api.ts`: the single typed API client. Access token in memory, refresh via httpOnly cookie, single-flight refresh on 401, typed `ApiError`.
+- `src/hooks`: session restore/login (`useSession`), server cart/wishlist with optimistic updates (`useCart`, `useWishlist`), Razorpay flow (`useRazorpayPayment`).
+- `src/utils/rules.ts`: client mirrors of backend validation rules (the server remains authoritative).
+- Routes are lazy-loaded per page (`src/routes/router.tsx`). Role checks in the UI are for navigation only; the API enforces permissions.
+
+See `docs/FRONTEND_CHECKLIST.md` for the audit, fixes and test results.
