@@ -23,11 +23,17 @@ const SearchOverlay = ({ onClose }: { onClose: () => void }) => {
   return (
     <div className="search-overlay" onClick={onClose} onKeyDown={(event) => event.key === 'Escape' && onClose()}>
       <div className="search-panel" role="dialog" aria-modal="true" aria-label="Search products" onClick={(event) => event.stopPropagation()}>
-        <form role="search" onSubmit={(event) => { event.preventDefault(); if (text.trim()) { navigate(`/search?q=${encodeURIComponent(text.trim())}`); onClose() } }}>
-          <label htmlFor="global-search" className="sr-only">Search products</label>
-          <input id="global-search" type="search" placeholder="Search candles, fragrances, collections" value={text} onChange={(event) => setText(event.target.value)} autoFocus />
-        </form>
+        <div className="search-bar">
+          <form role="search" className="search-form" onSubmit={(event) => { event.preventDefault(); if (text.trim()) { navigate(`/search?q=${encodeURIComponent(text.trim())}`); onClose() } }}>
+            <Search size={20} className="search-form-icon" aria-hidden="true" />
+            <label htmlFor="global-search" className="sr-only">Search products</label>
+            <input id="global-search" type="search" placeholder="Search candles, fragrances, collections" value={text} onChange={(event) => setText(event.target.value)} autoFocus />
+          </form>
+          <button type="button" className="search-close" onClick={onClose} aria-label="Close search"><X size={20} /></button>
+        </div>
         <div className="search-results" aria-live="polite">
+          {debounced.length < 2 && <p className="search-hint">Type at least two letters, then press Enter to see all results.</p>}
+          {debounced.length >= 2 && results.isFetching && !results.data && <p className="search-hint">Searching…</p>}
           {debounced.length >= 2 && results.isSuccess && results.data.items.length === 0 && <p className="search-empty">No products found for “{debounced}”.</p>}
           {results.isError && <p className="search-empty">Search is unavailable right now.</p>}
           {results.data?.items.map((product) => (
@@ -37,7 +43,6 @@ const SearchOverlay = ({ onClose }: { onClose: () => void }) => {
             </Link>
           ))}
         </div>
-        <button type="button" className="icon-button search-close" onClick={onClose} aria-label="Close search"><X size={18} /></button>
       </div>
     </div>
   )

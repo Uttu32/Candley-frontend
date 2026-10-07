@@ -7,6 +7,7 @@ import { Pagination } from '../components/common/Pagination'
 import { ErrorState, ProductGridSkeleton } from '../components/common/Feedback'
 import { PageMeta } from '../components/common/PageMeta'
 import { titleFromSlug } from '../utils/format'
+import { SlidersHorizontal } from 'lucide-react'
 
 const sortOptions = [
   { value: 'featured', label: 'Featured' },
@@ -59,6 +60,8 @@ export const ShopPage = () => {
   const [searchParams, setSearchParams] = useSearchParams()
   const { query, routeCategory, routeCollection } = useShopQuery()
   const [searchText, setSearchText] = useState(query.q ?? '')
+  // On phones the filter panel is collapsed behind a button so products appear first.
+  const [filtersOpen, setFiltersOpen] = useState(false)
   const categoriesQuery = useQuery({ queryKey: ['categories'], queryFn: catalogApi.categories })
   const productsQuery = useQuery({ queryKey: ['products', 'list', query], queryFn: ({ signal }) => catalogApi.products(query, signal), placeholderData: keepPreviousData })
 
@@ -84,6 +87,7 @@ export const ShopPage = () => {
   const title = routeCollection ? titleFromSlug(routeCollection) : routeCategory ? categoryName ?? titleFromSlug(routeCategory) : query.q ? `Results for “${query.q}”` : 'Shop all'
   const data = productsQuery.data
   const priceValue = searchParams.get('price') ?? ''
+  const activeFilterCount = [query.category, priceValue, query.inStock, query.sort && query.sort !== 'featured' ? query.sort : undefined].filter(Boolean).length
 
   return (
     <div className="container section-spacing">
@@ -94,11 +98,18 @@ export const ShopPage = () => {
         noIndex={Boolean(query.q)}
       />
       <div className="shop-header">
-        <h1>{title}</h1>
-        <p aria-live="polite">{data ? `${data.pagination.total} ${data.pagination.total === 1 ? 'product' : 'products'}` : ' '}</p>
+        <div>
+          <h1>{title}</h1>
+          <p aria-live="polite">{data ? `${data.pagination.total} ${data.pagination.total === 1 ? 'product' : 'products'}` : ' '}</p>
+        </div>
+        <button type="button" className="filter-toggle" aria-expanded={filtersOpen} aria-controls="shop-filters" onClick={() => setFiltersOpen((open) => !open)}>
+          <SlidersHorizontal size={16} aria-hidden="true" />
+          {filtersOpen ? 'Hide filters' : 'Filters'}
+          {activeFilterCount > 0 && <span className="filter-toggle-count">{activeFilterCount}</span>}
+        </button>
       </div>
       <div className="shop-layout">
-        <aside className="filter-panel" aria-label="Filters">
+        <aside id="shop-filters" className={`filter-panel ${filtersOpen ? 'is-open' : ''}`} aria-label="Filters">
           <h2 className="filter-title">Filters</h2>
           {!routeCategory && !routeCollection && (categoriesQuery.data?.length ?? 0) > 0 && (
             <div className="filter-group">
